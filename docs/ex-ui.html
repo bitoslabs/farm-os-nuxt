@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oripio — Financial Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --bg: #0a0e0a;
+    --bg-2: #0d130d;
+    --surface: rgba(255,255,255,0.035);
+    --surface-2: rgba(255,255,255,0.06);
+    --surface-3: rgba(255,255,255,0.09);
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.14);
+    --fg: #f5f7f5;
+    --muted: #8a948a;
+    --muted-2: #5a635a;
+    --accent: #c4f042;
+    --accent-dim: rgba(196,240,66,0.15);
+    --positive: #4ade80;
+    --negative: #f87171;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    background-image: 
+      radial-gradient(ellipse 60% 40% at 15% -10%, rgba(196,240,66,0.07), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 90% 110%, rgba(74,222,128,0.04), transparent 60%),
+      linear-gradient(180deg, #0a0e0a 0%, #0c110c 100%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+  }
+  .display-font { font-family: 'Space Grotesk', sans-serif; }
+  .glass {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .nav-item {
+    position: relative;
+    transition: all 0.2s ease;
+    color: var(--muted);
+  }
+  .nav-item.active {
+    background: var(--surface-2);
+    color: var(--fg);
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: var(--accent);
+    border-radius: 0 3px 3px 0;
+  }
+  .nav-item:hover:not(.active) {
+    background: var(--surface);
+    color: var(--fg);
+  }
+  .stat-card {
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-bright);
+  }
+  .accent-glow { box-shadow: 0 0 40px rgba(196,240,66,0.2); }
+  .progress-fill {
+    background: linear-gradient(90deg, #8de314 0%, var(--accent) 100%);
+    height: 100%;
+    border-radius: inherit;
+    position: relative;
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2.5s infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .transaction-row {
+    transition: background 0.2s ease;
+    cursor: pointer;
+  }
+  .transaction-row:hover { background: var(--surface); }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.6s ease-out backwards; }
+  .chart-path {
+    stroke-dasharray: 2000;
+    stroke-dashoffset: 2000;
+    animation: drawLine 2.2s ease-out 0.3s forwards;
+  }
+  @keyframes drawLine { to { stroke-dashoffset: 0; } }
+  .chart-area {
+    opacity: 0;
+    animation: fadeIn 1.2s ease-out 1.2s forwards;
+  }
+  @keyframes fadeIn { to { opacity: 1; } }
+  .pulse-dot { animation: pulseDot 2s ease-in-out infinite; }
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+  .wallet-card { transition: all 0.3s ease; cursor: pointer; }
+  .wallet-card:hover { transform: translateY(-3px); border-color: var(--border-bright); }
+  .wallet-card.featured {
+    background: linear-gradient(135deg, rgba(196,240,66,0.10) 0%, rgba(74,222,128,0.04) 100%);
+    border-color: rgba(196,240,66,0.25);
+  }
+  .btn-accent {
+    background: var(--accent);
+    color: #0a0e0a;
+    transition: all 0.2s ease;
+  }
+  .btn-accent:hover {
+    background: #d4ff52;
+    box-shadow: 0 0 24px rgba(196,240,66,0.35);
+    transform: translateY(-1px);
+  }
+  .btn-ghost {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+  }
+  .btn-ghost:hover {
+    background: var(--surface-2);
+    border-color: var(--border-bright);
+  }
+  .icon-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+  }
+  .stat-card:hover .icon-box {
+    background: var(--accent-dim);
+    border-color: rgba(196,240,66,0.3);
+  }
+  .period-btn { transition: all 0.2s ease; color: var(--muted); }
+  .period-btn.active { background: var(--surface-2); color: var(--fg); }
+  .search-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: var(--border-bright);
+    background: var(--surface-2);
+  }
+  .chart-grid line { stroke: rgba(255,255,255,0.04); }
+  .avatar-grad { background: linear-gradient(135deg, #c4f042 0%, #4ade80 100%); }
+  .notif-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+  }
+  .sparkline { width: 100%; height: 32px; }
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+<div class="flex min-h-screen">
+  <!-- SIDEBAR -->
+  <aside class="w-[260px] flex-shrink-0 border-r border-[var(--border)] flex-col py-6 px-5 hidden md:flex">
+    <div class="flex items-center gap-2.5 mb-10 px-2">
+      <div class="w-9 h-9 rounded-xl bg-[var(--accent)] flex items-center justify-center accent-glow">
+        <span class="display-font text-[var(--bg)] font-bold text-lg">O</span>
+      </div>
+      <span class="display-font text-xl font-bold tracking-tight">Oripio</span>
+    </div>
+    <nav class="flex flex-col gap-1 flex-1">
+      <div class="text-[10px] font-semibold text-[var(--muted-2)] uppercase tracking-[0.15em] px-3 mb-2">Menu</div>
+      <a class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer">
+        <i class="fa-solid fa-table-cells-large w-4 text-center"></i><span>Dashboard</span>
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer">
+        <i class="fa-solid fa-chart-line w-4 text-center"></i><span>Analytics</span>
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer">
+        <i class="fa-solid fa-wallet w-4 text-center"></i><span>Wallets</span>
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer">
+        <i class="fa-solid fa-right-left w-4 text-center"></i><span>Transactions</span>
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer">
+        <i class="fa-solid fa-credit-card w-4 text-center"></i><span>Cards</span>
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer">
+        <i class="fa-solid fa-piggy-bank w-4 text-center"></i><span>Savings</span>
+      </a>
+      <div class="text-[10px] font-semibold text-[var(--muted-2)] uppercase tracking-[0.15em] px-3 mb-2 mt-6">Tools</div>
+      <a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer">
+        <i class="fa-solid fa-file-lines w-4 text-center"></i><span>Reports</span>
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer">
+        <i class="fa-solid fa-gear w-4 text-center"></i><span>Settings</span>
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer">
+        <i class="fa-solid fa-circle-question w-4 text-center"></i><span>Help Center</span>
+      </a>
+    </nav>
+    <div class="glass rounded-2xl p-4 mt-4 relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-[var(--accent-dim)] to-transparent"></div>
+      <div class="relative">
+        <div class="w-8 h-8 rounded-lg bg-[var(--accent)] flex items-center justify-center mb-3">
+          <i class="fa-solid fa-crown text-[var(--bg)] text-xs"></i>
+        </div>
+        <div class="text-sm font-semibold mb-1">Upgrade to Pro</div>
+        <div class="text-xs text-[var(--muted)] mb-3 leading-relaxed">Unlock advanced analytics & unlimited wallets.</div>
+        <button class="w-full btn-accent text-xs font-semibold py-2 rounded-lg">Upgrade Now</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="flex-1 flex flex-col min-w-0">
+    <!-- Top header -->
+    <header class="flex items-center gap-4 px-6 md:px-8 py-5 border-b border-[var(--border)]">
+      <div class="relative flex-1 max-w-md">
+        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-2)] text-sm"></i>
+        <input type="text" placeholder="Search transactions, wallets, reports..." class="search-input w-full pl-11 pr-4 py-2.5 rounded-lg text-sm placeholder:text-[var(--muted-2)]">
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn-ghost w-10 h-10 rounded-lg flex items-center justify-center relative" aria-label="Notifications">
+          <i class="fa-regular fa-bell text-sm"></i>
+          <span class="notif-dot"></span>
+        </button>
+        <button class="btn-ghost w-10 h-10 rounded-lg flex items-center justify-center" aria-label="Messages">
+          <i class="fa-regular fa-envelope text-sm"></i>
+        </button>
+        <div class="w-px h-6 bg-[var(--border)] mx-1"></div>
+        <div class="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-[var(--surface)] cursor-pointer transition">
+          <div class="w-8 h-8 rounded-full avatar-grad flex items-center justify-center">
+            <span class="text-[var(--bg)] font-bold text-xs">SR</span>
+          </div>
+          <div class="hidden md:block">
+            <div class="text-sm font-semibold leading-tight">Sajibur Rahman</div>
+            <div class="text-[11px] text-[var(--muted)]">Premium User</div>
+          </div>
+          <i class="fa-solid fa-chevron-down text-xs text-[var(--muted-2)]"></i>
+        </div>
+      </div>
+    </header>
+
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+      <!-- Greeting -->
+      <div class="flex items-end justify-between gap-4 flex-wrap fade-up">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-2 h-2 rounded-full bg-[var(--accent)] pulse-dot"></span>
+            <span class="text-xs text-[var(--muted)] uppercase tracking-wider font-medium">Tuesday, March 18</span>
+          </div>
+          <h1 class="display-font text-3xl font-bold tracking-tight">Good morning, <span class="text-[var(--accent)]">Sajibur</span></h1>
+          <p class="text-sm text-[var(--muted)] mt-1.5">Here's what's happening with your finances today.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn-ghost px-4 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2">
+            <i class="fa-solid fa-arrow-down-to-line text-xs"></i><span>Import</span>
+          </button>
+          <button id="sendBtn" class="btn-accent px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2">
+            <i class="fa-solid fa-paper-plane text-xs"></i><span>Send Money</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="stat-card glass rounded-2xl p-5 fade-up" style="animation-delay:0.05s">
+          <div class="flex items-start justify-between mb-4">
+            <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center">
+              <i class="fa-solid fa-wallet text-[var(--accent)] text-sm"></i>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-md bg-[rgba(74,222,128,0.1)] text-[var(--positive)] font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-arrow-up text-[10px]"></i> 3.2%
+            </span>
+          </div>
+          <div class="text-xs text-[var(--muted)] uppercase tracking-wider mb-1.5">Total Balance</div>
+          <div class="display-font text-3xl font-bold mb-3" data-counter="35340.89" data-prefix="$">$0.00</div>
+          <svg class="sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#c4f042"/>
+                <stop offset="100%" stop-color="#c4f042" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0,24 L10,20 L20,22 L30,16 L40,18 L50,12 L60,14 L70,8 L80,10 L90,6 L100,4 L100,32 L0,32 Z" fill="url(#sparkGrad)" opacity="0.3"/>
+            <path d="M0,24 L10,20 L20,22 L30,16 L40,18 L50,12 L60,14 L70,8 L80,10 L90,6 L100,4" stroke="#c4f042" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <div class="stat-card glass rounded-2xl p-5 fade-up" style="animation-delay:0.1s">
+          <div class="flex items-start justify-between mb-4">
+            <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center">
+              <i class="fa-solid fa-arrow-trend-down text-[var(--negative)] text-sm"></i>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-md bg-[rgba(248,113,113,0.1)] text-[var(--negative)] font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-arrow-down text-[10px]"></i> 2.1%
+            </span>
+          </div>
+          <div class="text-xs text-[var(--muted)] uppercase tracking-wider mb-1.5">Total Spending</div>
+          <div class="display-font text-3xl font-bold mb-3" data-counter="9845.20" data-prefix="$">$0.00</div>
+          <svg class="sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="sparkGradNeg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#f87171"/>
+                <stop offset="100%" stop-color="#f87171" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0,8 L10,12 L20,10 L30,14 L40,12 L50,18 L60,16 L70,22 L80,20 L90,24 L100,28 L100,32 L0,32 Z" fill="url(#sparkGradNeg)" opacity="0.25"/>
+            <path d="M0,8 L10,12 L20,10 L30,14 L40,12 L50,18 L60,16 L70,22 L80,20 L90,24 L100,28" stroke="#f87171" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <div class="stat-card glass rounded-2xl p-5 fade-up" style="animation-delay:0.15s">
+          <div class="flex items-start justify-between mb-4">
+            <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center">
+              <i class="fa-solid fa-piggy-bank text-[var(--positive)] text-sm"></i>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-md bg-[rgba(74,222,128,0.1)] text-[var(--positive)] font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-arrow-up text-[10px]"></i> 4.5%
+            </span>
+          </div>
+          <div class="text-xs text-[var(--muted)] uppercase tracking-wider mb-1.5">Total Savings</div>
+          <div class="display-font text-3xl font-bold mb-3" data-counter="18420.75" data-prefix="$">$0.00</div>
+          <svg class="sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="sparkGradPos" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#4ade80"/>
+                <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0,28 L10,26 L20,22 L30,24 L40,18 L50,20 L60,14 L70,12 L80,8 L90,10 L100,4 L100,32 L0,32 Z" fill="url(#sparkGradPos)" opacity="0.25"/>
+            <path d="M0,28 L10,26 L20,22 L30,24 L40,18 L50,20 L60,14 L70,12 L80,8 L90,10 L100,4" stroke="#4ade80" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Main grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left column -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Chart -->
+          <div class="glass rounded-2xl p-6 fade-up" style="animation-delay:0.2s">
+            <div class="flex items-start justify-between mb-6 flex-wrap gap-3">
+              <div>
+                <h2 class="text-base font-semibold mb-1">Balance Overview</h2>
+                <p class="text-xs text-[var(--muted)]">Track your balance changes over time</p>
+              </div>
+              <div class="flex items-center gap-1 p-1 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                <button class="period-btn px-3 py-1.5 rounded-md text-xs font-medium" data-period="week">Week</button>
+                <button class="period-btn active px-3 py-1.5 rounded-md text-xs font-medium" data-period="month">Month</button>
+                <button class="period-btn px-3 py-1.5 rounded-md text-xs font-medium" data-period="year">Year</button>
+              </div>
+            </div>
+            <div class="flex items-center gap-6 mb-4 flex-wrap">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-[var(--accent)]"></span>
+                <span class="text-xs text-[var(--muted)]">Income</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-[var(--negative)]"></span>
+                <span class="text-xs text-[var(--muted)]">Spending</span>
+              </div>
+              <div class="ml-auto flex items-baseline gap-2">
+                <span class="display-font text-2xl font-bold">$35,340.89</span>
+                <span class="text-xs text-[var(--positive)] font-semibold">+12.5%</span>
+              </div>
+            </div>
+            <div class="relative h-[260px]">
+              <svg class="w-full h-full" viewBox="0 0 800 260" preserveAspectRatio="none">
+                <g class="chart-grid">
+                  <line x1="0" y1="50" x2="800" y2="50"/>
+                  <line x1="0" y1="100" x2="800" y2="100"/>
+                  <line x1="0" y1="150" x2="800" y2="150"/>
+                  <line x1="0" y1="200" x2="800" y2="200"/>
+                </g>
+                <defs>
+                  <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#c4f042" stop-opacity="0.35"/>
+                    <stop offset="100%" stop-color="#c4f042" stop-opacity="0"/>
+                  </linearGradient>
+                  <linearGradient id="areaGrad2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#f87171" stop-opacity="0.18"/>
+                    <stop offset="100%" stop-color="#f87171" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path class="chart-area" d="M0,180 C50,170 100,190 150,175 C200,160 250,180 300,170 C350,160 400,175 450,165 C500,155 550,170 600,160 C650,150 700,165 750,155 L800,150 L800,260 L0,260 Z" fill="url(#areaGrad2)"/>
+                <path class="chart-area" d="M0,180 C50,170 100,190 150,175 C200,160 250,180 300,170 C350,160 400,175 450,165 C500,155 550,170 600,160 C650,150 700,165 750,155 L800,150" stroke="#f87171" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+                <path class="chart-area" d="M0,200 C50,180 100,170 150,160 C200,150 250,140 300,130 C350,115 400,105 450,90 C500,80 550,75 600,60 C650,50 700,40 750,30 L800,25 L800,260 L0,260 Z" fill="url(#areaGrad)"/>
+                <path class="chart-path" d="M0,200 C50,180 100,170 150,160 C200,150 250,140 300,130 C350,115 400,105 450,90 C500,80 550,75 600,60 C650,50 700,40 750,30 L800,25" stroke="#c4f042" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <g class="chart-area">
+                  <circle cx="150" cy="160" r="3" fill="#c4f042"/>
+                  <circle cx="300" cy="130" r="3" fill="#c4f042"/>
+                  <circle cx="450" cy="90" r="3" fill="#c4f042"/>
+                  <circle cx="600" cy="60" r="3" fill="#c4f042"/>
+                  <circle cx="750" cy="30" r="4.5" fill="#c4f042" stroke="#0a0e0a" stroke-width="2"/>
+                </g>
+              </svg>
+              <div class="absolute -bottom-1 left-0 right-0 flex justify-between text-[10px] text-[var(--muted-2)] font-medium px-1">
+                <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wallets -->
+          <div class="glass rounded-2xl p-6 fade-up" style="animation-delay:0.25s">
+            <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+              <div>
+                <h2 class="text-base font-semibold mb-1">Multi-Currency Wallets</h2>
+                <p class="text-xs text-[var(--muted)]">Hold and manage 4 currencies</p>
+              </div>
+              <button class="btn-ghost px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5">
+                <i class="fa-solid fa-plus text-[10px]"></i><span>Add Wallet</span>
+              </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="wallet-card featured rounded-xl p-4 border border-[var(--border)]">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-full bg-[rgba(196,240,66,0.15)] flex items-center justify-center">
+                      <span class="text-[var(--accent)] font-bold text-sm">$</span>
+                    </div>
+                    <div>
+                      <div class="text-sm font-semibold">USD Wallet</div>
+                      <div class="text-[10px] text-[var(--muted)]">US Dollar</div>
+                    </div>
+                  </div>
+                  <i class="fa-solid fa-ellipsis text-[var(--muted-2)] text-xs"></i>
+                </div>
+                <div class="display-font text-2xl font-bold mb-1">$28,450.50</div>
+                <div class="text-[11px] text-[var(--positive)] font-medium">+2.4% this week</div>
+              </div>
+              <div class="wallet-card glass rounded-xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-full bg-[var(--surface-2)] flex items-center justify-center">
+                      <span class="text-[var(--fg)] font-bold text-sm">€</span>
+                    </div>
+                    <div>
+                      <div class="text-sm font-semibold">EUR Wallet</div>
+                      <div class="text-[10px] text-[var(--muted)]">Euro</div>
+                    </div>
+                  </div>
+                  <i class="fa-solid fa-ellipsis text-[var(--muted-2)] text-xs"></i>
+                </div>
+                <div class="display-font text-2xl font-bold mb-1">€4,820.30</div>
+                <div class="text-[11px] text-[var(--muted)] font-medium">$5,235.40 USD</div>
+              </div>
+              <div class="wallet-card glass rounded-xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-full bg-[var(--surface-2)] flex items-center justify-center">
+                      <span class="text-[var(--fg)] font-bold text-sm">£</span>
+                    </div>
+                    <div>
+                      <div class="text-sm font-semibold">GBP Wallet</div>
+                      <div class="text-[10px] text-[var(--muted)]">British Pound</div>
+                    </div>
+                  </div>
+                  <i class="fa-solid fa-ellipsis text-[var(--muted-2)] text-xs"></i>
+                </div>
+                <div class="display-font text-2xl font-bold mb-1">£1,950.80</div>
+                <div class="text-[11px] text-[var(--muted)] font-medium">$2,478.32 USD</div>
+              </div>
+              <div class="wallet-card glass rounded-xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-full bg-[var(--surface-2)] flex items-center justify-center">
+                      <span class="text-[var(--fg)] font-bold text-sm">¥</span>
+                    </div>
+                    <div>
+                      <div class="text-sm font-semibold">JPY Wallet</div>
+                      <div class="text-[10px] text-[var(--muted)]">Japanese Yen</div>
+                    </div>
+                  </div>
+                  <i class="fa-solid fa-ellipsis text-[var(--muted-2)] text-xs"></i>
+                </div>
+                <div class="display-font text-2xl font-bold mb-1">¥186,500</div>
+                <div class="text-[11px] text-[var(--muted)] font-medium">$1,247.65 USD</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div class="space-y-6">
+          <!-- Savings Plan -->
+          <div class="glass rounded-2xl p-6 fade-up" style="animation-delay:0.3s">
+            <div class="flex items-center justify-between mb-5">
+              <div>
+                <h2 class="text-base font-semibold mb-1">Savings Plan</h2>
+                <p class="text-xs text-[var(--muted)]">Investment goals progress</p>
+              </div>
+              <button class="btn-ghost w-8 h-8 rounded-lg flex items-center justify-center" aria-label="Open">
+                <i class="fa-solid fa-arrow-up-right text-xs"></i>
+              </button>
+            </div>
+            <div class="flex items-center justify-center mb-5">
+              <div class="relative w-44 h-44">
+                <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.06)" stroke-width="6" fill="none"/>
+                  <circle cx="50" cy="50" r="42" stroke="url(#ringGrad)" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="263.89" stroke-dashoffset="100.28"/>
+                  <defs>
+                    <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#c4f042"/>
+                      <stop offset="100%" stop-color="#4ade80"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <div class="display-font text-4xl font-bold">62<span class="text-xl text-[var(--muted)]">%</span></div>
+                  <div class="text-[11px] text-[var(--muted)] uppercase tracking-wider mt-1">Completed</div>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-[var(--muted)]">Target</span>
+                <span class="font-semibold display-font">$30,000.00</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-[var(--muted)]">Current</span>
+                <span class="font-semibold display-font text-[var(--accent)]">$18,420.75</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-[var(--muted)]">Remaining</span>
+                <span class="font-semibold display-font">$11,579.25</span>
+              </div>
+              <div class="flex items-center justify-between text-sm pt-3 border-t border-[var(--border)]">
+                <span class="text-[var(--muted)]">Monthly goal</span>
+                <span class="font-semibold">$1,250.00</span>
+              </div>
+            </div>
+            <button id="addSavingsBtn" class="w-full btn-accent py-2.5 rounded-lg text-sm font-semibold mt-5">Add to Savings</button>
+          </div>
+
+          <!-- Recent Transactions -->
+          <div class="glass rounded-2xl p-6 fade-up" style="animation-delay:0.35s">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="text-base font-semibold mb-1">Recent Transactions</h2>
+                <p class="text-xs text-[var(--muted)]">Last 5 transactions</p>
+              </div>
+              <button class="text-xs text-[var(--accent)] font-semibold hover:underline">View All</button>
+            </div>
+            <div class="space-y-1">
+              <div class="transaction-row flex items-center gap-3 p-2.5 rounded-lg">
+                <div class="w-10 h-10 rounded-full bg-[rgba(248,113,113,0.12)] flex items-center justify-center flex-shrink-0">
+                  <i class="fa-brands fa-apple text-[var(--negative)] text-sm"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-semibold truncate">Apple Store</div>
+                  <div class="text-[11px] text-[var(--muted)]">Today · 10:24 AM</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-[var(--negative)]">-$1,299.00</div>
+                  <div class="text-[10px] text-[var(--positive)] font-medium">Success</div>
+                </div>
+              </div>
+              <div class="transaction-row flex items-center gap-3 p-2.5 rounded-lg">
+                <div class="w-10 h-10 rounded-full bg-[rgba(74,222,128,0.12)] flex items-center justify-center flex-shrink-0">
+                  <i class="fa-solid fa-briefcase text-[var(--positive)] text-sm"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-semibold truncate">Salary Deposit</div>
+                  <div class="text-[11px] text-[var(--muted)]">Today · 9:00 AM</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-[var(--positive)]">+$6,500.00</div>
+                  <div class="text-[10px] text-[var(--positive)] font-medium">Success</div>
+                </div>
+              </div>
+              <div class="transaction-row flex items-center gap-3 p-2.5 rounded-lg">
+                <div class="w-10 h-10 rounded-full bg-[rgba(248,113,113,0.12)] flex items-center justify-center flex-shrink-0">
+                  <i class="fa-brands fa-spotify text-[var(--negative)] text-sm"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-semibold truncate">Spotify Premium</div>
+                  <div class="text-[11px] text-[var(--muted)]">Yesterday · 8:15 PM</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-[var(--negative)]">-$9.99</div>
+                  <div class="text-[10px] text-[var(--positive)] font-medium">Success</div>
+                </div>
+              </div>
+              <div class="transaction-row flex items-center gap-3 p-2.5 rounded-lg">
+                <div class="w-10 h-10 rounded-full bg-[rgba(248,113,113,0.12)] flex items-center justify-center flex-shrink-0">
+                  <i class="fa-brands fa-amazon text-[var(--negative)] text-sm"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-semibold truncate">Amazon Purchase</div>
+                  <div class="text-[11px] text-[var(--muted)]">Mar 16 · 2:45 PM</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-[var(--negative)]">-$247.80</div>
+                  <div class="text-[10px] text-[var(--positive)] font-medium">Success</div>
+                </div>
+              </div>
+              <div class="transaction-row flex items-center gap-3 p-2.5 rounded-lg">
+                <div class="w-10 h-10 rounded-full bg-[rgba(248,113,113,0.12)] flex items-center justify-center flex-shrink-0">
+                  <i class="fa-solid fa-car text-[var(--negative)] text-sm"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-semibold truncate">Uber Ride</div>
+                  <div class="text-[11px] text-[var(--muted)]">Mar 15 · 6:30 PM</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-[var(--negative)]">-$18.50</div>
+                  <div class="text-[10px] text-[var(--positive)] font-medium">Success</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast glass rounded-xl px-4 py-3 flex items-center gap-3 max-w-sm">
+  <div class="w-8 h-8 rounded-full bg-[rgba(74,222,128,0.15)] flex items-center justify-center flex-shrink-0">
+    <i class="fa-solid fa-check text-[var(--positive)] text-xs"></i>
+  </div>
+  <div>
+    <div class="text-sm font-semibold" id="toastTitle">Action initiated</div>
+    <div class="text-[11px] text-[var(--muted)]" id="toastMsg">Your request is being processed.</div>
+  </div>
+</div>
+
+<script>
+  // Animate counters
+  function animateCounter(el) {
+    const target = parseFloat(el.dataset.counter);
+    const prefix = el.dataset.prefix || '';
+    const duration = 1500;
+    const start = performance.now();
+    function update(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = target * eased;
+      el.textContent = prefix + current.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  }
+  document.querySelectorAll('[data-counter]').forEach(el => {
+    setTimeout(() => animateCounter(el), 300);
+  });
+
+  // Period toggle
+  document.querySelectorAll('.period-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Nav toggle
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Toast helper
+  function showToast(title, msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastMsg').textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', () => {
+    showToast('Send Money', 'Opening transfer wizard...');
+  });
+  document.getElementById('addSavingsBtn').addEventListener('click', () => {
+    showToast('Savings contribution', 'Add funds flow initiated.');
+  });
+</script>
+</body>
+</html>
