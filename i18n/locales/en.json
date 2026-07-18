@@ -238,6 +238,8 @@
     "logActivity": "Log activity",
     "activityLog": "Activity log",
     "noActivity": "No activities recorded yet.",
+    "lastCare": "Last care",
+    "noCare": "No care logged",
     "activityHint": "Log watering, fertilizing, pest treatment, weeding, etc. Consuming an input auto-deducts it from inventory.",
     "inputUsed": "Input used",
     "qtyUsed": "Quantity used",

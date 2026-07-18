@@ -56,6 +56,7 @@ function rowActions(c: CropVariety) { return [[{ label: t('crud.edit'), icon: 'i
     </PageHeader>
 
     <ListToolbar
+      v-if="viewMode === 'grid' || !list.length"
       v-model:search="search"
       v-model:sort-key="sortKey"
       v-model:sort-dir="sortDir"
@@ -84,7 +85,8 @@ function rowActions(c: CropVariety) { return [[{ label: t('crud.edit'), icon: 'i
     </div>
 
     <!-- TABLE VIEW -->
-    <GlassCard v-else-if="list.length" class="overflow-hidden mb-6">
+    <GlassCard v-else-if="list.length" class="list-workspace overflow-hidden mb-6">
+      <ListToolbar v-model:search="search" v-model:sort-key="sortKey" v-model:sort-dir="sortDir" v-model:view-mode="viewMode" :sort-items="sortItems" :search-placeholder="t('crops.search')" embedded />
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>

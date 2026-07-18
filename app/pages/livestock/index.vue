@@ -136,6 +136,7 @@ const prodList = computed(() => [...livestockProduction.value].sort((a, b) => b.
     <!-- ANIMALS -->
     <template v-if="tab === 'animals'">
       <ListToolbar
+        v-if="viewMode === 'grid' || !list.length"
         v-model:search="search"
         v-model:sort-key="sortKey"
         v-model:sort-dir="sortDir"
@@ -166,7 +167,10 @@ const prodList = computed(() => [...livestockProduction.value].sort((a, b) => b.
       </div>
 
       <!-- TABLE VIEW -->
-      <GlassCard v-else-if="list.length" class="overflow-hidden">
+      <GlassCard v-else-if="list.length" class="list-workspace overflow-hidden">
+        <ListToolbar v-model:search="search" v-model:sort-key="sortKey" v-model:sort-dir="sortDir" v-model:view-mode="viewMode" :sort-items="sortItems" :search-placeholder="t('common.search')" embedded>
+          <USelect v-model="speciesFilter" :items="speciesItems" class="w-44" />
+        </ListToolbar>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>

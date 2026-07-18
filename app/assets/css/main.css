@@ -46,6 +46,7 @@
   --info: #2f6fd6;
 
   --glass-blur: 16px;
+  --app-header-height: 5rem;
   --content-padding: 1rem;
   --content-padding-sm: 1.5rem;
   --content-padding-md: 2rem;
@@ -222,6 +223,64 @@ body {
 
 .transaction-row { transition: background 0.2s ease; cursor: pointer; }
 .transaction-row:hover { background: var(--surface); }
+
+/* Full-page table workspace: used when a list is the primary page content.
+   The page and its sidebar already establish the boundary, so an additional
+   card frame would add visual weight without improving scanability. */
+.list-workspace {
+  --list-workspace-inset: var(--content-padding);
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Let primary data tables meet the desktop content boundary. Page headers and
+   cards retain the layout's comfortable inset; only table mode is full-width. */
+@media (min-width: 640px) {
+  .list-workspace {
+    --list-workspace-inset: var(--content-padding-sm);
+    margin-inline: calc(-1 * var(--content-padding-sm));
+  }
+}
+
+@media (min-width: 768px) {
+  .list-workspace {
+    --list-workspace-inset: var(--content-padding-md);
+    margin-inline: calc(-1 * var(--content-padding-md));
+  }
+}
+
+/* The workspace surface spans full width, but its content shares the exact
+   alignment line used by the page title and summary cards. */
+.list-workspace .list-toolbar-embedded {
+  padding-inline: var(--list-workspace-inset) !important;
+}
+
+.list-workspace :is(th, td):first-child {
+  padding-left: var(--list-workspace-inset) !important;
+}
+
+.list-workspace :is(th, td):last-child {
+  padding-right: var(--list-workspace-inset) !important;
+}
+
+.list-workspace thead tr {
+  background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+}
+
+.list-workspace thead th {
+  height: 2.75rem;
+  vertical-align: middle;
+}
+
+.list-workspace tbody tr {
+  height: 4.25rem;
+}
+
+.list-workspace tbody tr:hover {
+  background: color-mix(in srgb, var(--accent-dim) 35%, transparent);
+}
 
 .pulse-dot { animation: pulseDot 2s ease-in-out infinite; }
 @keyframes pulseDot {

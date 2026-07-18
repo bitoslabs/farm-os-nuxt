@@ -183,6 +183,7 @@ function rowActions(a: FarmAsset) {
     <!-- REGISTER -->
     <template v-if="tab === 'register'">
       <ListToolbar
+        v-if="viewMode === 'grid' || !list.length"
         v-model:search="search"
         v-model:sort-key="sortKey"
         v-model:sort-dir="sortDir"
@@ -222,7 +223,8 @@ function rowActions(a: FarmAsset) {
       </div>
 
       <!-- TABLE -->
-      <GlassCard v-else-if="list.length" class="overflow-hidden">
+      <GlassCard v-else-if="list.length" class="list-workspace overflow-hidden">
+        <ListToolbar v-model:search="search" v-model:sort-key="sortKey" v-model:sort-dir="sortDir" v-model:view-mode="viewMode" :sort-items="sortItems" :search-placeholder="t('assets.search')" embedded />
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>

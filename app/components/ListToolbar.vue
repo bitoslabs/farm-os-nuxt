@@ -28,6 +28,8 @@ const props = withDefaults(defineProps<{
   showSearch?: boolean
   showSort?: boolean
   showViewToggle?: boolean
+  /** Removes the card treatment when the toolbar sits inside a list workspace. */
+  embedded?: boolean
   delay?: number
 }>(), {
   search: '',
@@ -39,6 +41,7 @@ const props = withDefaults(defineProps<{
   showSearch: true,
   showSort: true,
   showViewToggle: true,
+  embedded: false,
   delay: 0.2
 })
 
@@ -73,7 +76,13 @@ function toggleDir() {
 </script>
 
 <template>
-  <GlassCard class="p-3 flex items-center gap-2 flex-wrap" :delay="delay">
+  <GlassCard
+    class="p-3 flex items-center gap-2 flex-wrap"
+    :class="embedded ? 'list-toolbar-embedded' : ''"
+    :delay="embedded ? 0 : delay"
+  >
+    <slot name="prepend" />
+
     <UInput
       v-if="showSearch"
       v-model="searchProxy"
@@ -109,3 +118,13 @@ function toggleDir() {
     <slot />
   </GlassCard>
 </template>
+
+<style scoped>
+.list-toolbar-embedded {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+</style>

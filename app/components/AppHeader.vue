@@ -78,7 +78,7 @@ const accountItems = computed(() => {
 
 <template>
   <header
-    class="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 md:px-8 py-3 sm:py-4 border-b border-app sticky top-0 z-20 backdrop-blur-md bg-[var(--bg)]/70"
+    class="h-[var(--app-header-height)] flex items-center gap-2 sm:gap-3 px-4 sm:px-6 md:px-8 py-3 sm:py-4 border-b border-app sticky top-0 z-20 backdrop-blur-md bg-[var(--bg)]/70"
   >
     <!-- Hamburger (mobile) -->
     <button
