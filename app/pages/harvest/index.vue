@@ -22,18 +22,27 @@ onMounted(() => {
 
 const qualityA = computed(() => harvests.value.filter((h) => h.quality === 'A').length)
 const readyPlantings = computed(() => plantings.value.filter((p) => p.stage === 'ready'))
+const plantingById = computed(() => Object.fromEntries(plantings.value.map((p) => [p.id, p])))
+function harvestCropName(h: Harvest) {
+  const planting = plantingById.value[h.plantingId]
+  return cropById.value[h.cropId]?.name ?? cropById.value[planting?.cropId ?? '']?.name ?? '—'
+}
+function harvestPlotName(h: Harvest) {
+  const planting = plantingById.value[h.plantingId]
+  return plotById.value[h.plotId]?.name ?? plotById.value[planting?.plotId ?? '']?.name ?? '—'
+}
 
 // ---- shared list controls: search + multi-field sort + grid/table ----
 const sortOptions = computed<SortOption<Harvest>[]>(() => [
-  { key: 'crop', label: t('plantings.crop'), value: (h) => cropById.value[h.cropId]?.name ?? '' },
-  { key: 'plot', label: t('plantings.plot'), value: (h) => plotById.value[h.plotId]?.name ?? '' },
+  { key: 'crop', label: t('plantings.crop'), value: harvestCropName },
+  { key: 'plot', label: t('plantings.plot'), value: harvestPlotName },
   { key: 'date', label: t('common.date'), value: (h) => h.harvestedAt },
   { key: 'qty', label: t('common.quantity'), value: (h) => h.quantity },
   { key: 'grade', label: t('harvest.grade'), value: (h) => h.quality }
 ])
 const { search, sortKey, sortDir, viewMode, sortItems, list, applySort } = useListControls<Harvest>({
   items: harvests,
-  search: (h, q) => (cropById.value[h.cropId]?.name ?? '').toLowerCase().includes(q),
+  search: (h, q) => harvestCropName(h).toLowerCase().includes(q) || harvestPlotName(h).toLowerCase().includes(q),
   sortOptions,
   defaultSortKey: 'date',
   defaultSortDir: 'desc',
@@ -94,8 +103,8 @@ function rowActions(h: Harvest) { return [[{ label: t('crud.delete'), icon: 'i-l
           <div class="w-11 h-11 rounded-xl bg-surface-2 flex items-center justify-center"><UIcon name="i-lucide-shopping-basket" class="text-positive text-lg" /></div>
           <UBadge variant="subtle" :color="h.quality === 'A' ? 'success' : h.quality === 'B' ? 'warning' : 'neutral'">{{ t('harvest.grade') }} {{ h.quality }}</UBadge>
         </div>
-        <h3 class="font-semibold text-lg mb-0.5">{{ cropById[h.cropId]?.name ?? '—' }}</h3>
-        <div class="text-xs text-muted mb-3">{{ plotById[h.plotId]?.name }} · {{ date(h.harvestedAt) }}</div>
+        <h3 class="font-semibold text-lg mb-0.5">{{ harvestCropName(h) }}</h3>
+        <div class="text-xs text-muted mb-3">{{ harvestPlotName(h) }} · {{ date(h.harvestedAt) }}</div>
         <div class="display-font text-2xl font-bold text-positive">+{{ number(h.quantity, { maximumFractionDigits: 1 }) }} <span class="text-sm text-muted">{{ t('enums.unit.' + h.unit) }}</span></div>
       </GlassCard>
     </div>
@@ -120,10 +129,10 @@ function rowActions(h: Harvest) { return [[{ label: t('crud.delete'), icon: 'i-l
               <td class="px-5 py-4">
                 <div class="flex items-center gap-3">
                   <div class="w-9 h-9 rounded-lg bg-surface-2 flex items-center justify-center"><UIcon name="i-lucide-shopping-basket" class="text-positive" /></div>
-                  <span class="font-semibold">{{ cropById[h.cropId]?.name ?? '—' }}</span>
+                  <span class="font-semibold">{{ harvestCropName(h) }}</span>
                 </div>
               </td>
-              <td class="px-5 py-4 text-muted">{{ plotById[h.plotId]?.name ?? '—' }}</td>
+              <td class="px-5 py-4 text-muted">{{ harvestPlotName(h) }}</td>
               <td class="px-5 py-4 text-muted whitespace-nowrap">{{ date(h.harvestedAt) }}</td>
               <td class="px-5 py-4 text-right font-semibold text-positive whitespace-nowrap">+{{ number(h.quantity, { maximumFractionDigits: 1 }) }} {{ t('enums.unit.' + h.unit) }}</td>
               <td class="px-5 py-4"><UBadge variant="subtle" :color="h.quality === 'A' ? 'success' : h.quality === 'B' ? 'warning' : 'neutral'">{{ t('harvest.grade') }} {{ h.quality }}</UBadge></td>

@@ -103,6 +103,15 @@ const actOpen = ref(false)
 const actForm = reactive({ plantingId: '', type: 'watering' as ActivityType, date: new Date().toISOString().slice(0, 10), note: '', inputId: '', inputQty: 0 })
 const actTypeItems = computed(() => (['watering', 'fertilizing', 'pest_treatment', 'weeding', 'pruning', 'observation', 'other'] as ActivityType[]).map((x) => ({ label: t('enums.activityType.' + x), value: x })))
 const inputItems = computed(() => store.inventory.value.map((i) => ({ label: `${i.name} (${i.stock} ${t('enums.unit.' + i.unit)})`, value: i.id })))
+// planting selector — computed so ref lookups use explicit `.value`
+const activePlantingItems = computed(() =>
+  store.plantings.value
+    .filter((p) => p.stage !== 'harvested')
+    .map((p) => ({
+      label: `${cropById.value[p.cropId]?.name ?? '—'} · ${plotById.value[p.plotId]?.name ?? ''} · ${t('enums.stage.' + p.stage)}`,
+      value: p.id
+    }))
+)
 const usesInput = computed(() => actForm.type === 'fertilizing' || actForm.type === 'pest_treatment')
 function openActivity(p?: Planting) {
   Object.assign(actForm, { plantingId: p?.id ?? detailPlanting.value?.id ?? '', type: 'watering', date: new Date().toISOString().slice(0, 10), note: '', inputId: '', inputQty: 0 })
@@ -245,8 +254,8 @@ function saveActivity() {
     <UModal v-model:open="open" :title="editingId ? t('crud.edit') : t('plantings.addTitle')">
       <template #body>
         <div class="space-y-4">
-          <UFormField :label="t('plantings.crop')"><USelect v-model="form.cropId" :items="cropItems" class="w-full" /></UFormField>
-          <UFormField :label="t('plantings.plot')"><USelect v-model="form.plotId" :items="plotItems" class="w-full" /></UFormField>
+          <UFormField :label="t('plantings.crop')"><USelectMenu v-model="form.cropId" :items="cropItems" value-key="value" search-input :placeholder="t('plantings.crop')" class="w-full" /></UFormField>
+          <UFormField :label="t('plantings.plot')"><USelectMenu v-model="form.plotId" :items="plotItems" value-key="value" search-input :placeholder="t('plantings.plot')" class="w-full" /></UFormField>
           <div class="grid grid-cols-2 gap-4">
             <UFormField :label="t('plantings.method')"><USelect v-model="form.method" :items="methodItems" class="w-full" /></UFormField>
             <UFormField :label="t('plantings.initialStage')"><USelect v-model="form.stage" :items="STAGES.map(s => ({ label: t('enums.stage.' + s), value: s }))" class="w-full" /></UFormField>
@@ -327,13 +336,16 @@ function saveActivity() {
     <UModal v-model:open="actOpen" :title="t('plantings.logActivity')">
       <template #body>
         <div class="space-y-4">
+          <UFormField :label="t('plantings.title')">
+            <USelectMenu v-model="actForm.plantingId" :items="activePlantingItems" value-key="value" :search-input="activePlantingItems.length > 8" :placeholder="t('plantings.title')" class="w-full" />
+          </UFormField>
           <div class="grid grid-cols-2 gap-4">
             <UFormField :label="t('common.type')"><USelect v-model="actForm.type" :items="actTypeItems" class="w-full" /></UFormField>
             <UFormField :label="t('common.date')"><UInput v-model="actForm.date" type="date" class="w-full" /></UFormField>
           </div>
           <UFormField :label="t('common.notes')"><UTextarea v-model="actForm.note" :rows="2" class="w-full" /></UFormField>
           <div v-if="usesInput" class="grid grid-cols-2 gap-4">
-            <UFormField :label="t('plantings.inputUsed')"><USelect v-model="actForm.inputId" :items="inputItems" class="w-full" /></UFormField>
+            <UFormField :label="t('plantings.inputUsed')"><USelectMenu v-model="actForm.inputId" :items="inputItems" value-key="value" :search-input="inputItems.length > 8" :placeholder="t('plantings.inputUsed')" class="w-full" /></UFormField>
             <UFormField :label="t('plantings.qtyUsed')"><UInputNumber v-model="actForm.inputQty" :step="0.1" class="w-full" /></UFormField>
           </div>
           <p v-if="usesInput && actForm.inputId" class="text-[11px] text-muted flex items-center gap-1"><UIcon name="i-lucide-info" class="text-[10px]" />{{ t('plantings.activityHint') }}</p>

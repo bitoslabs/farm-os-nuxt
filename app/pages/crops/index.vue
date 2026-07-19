@@ -132,7 +132,7 @@ function rowActions(c: CropVariety) { return [[{ label: t('crud.edit'), icon: 'i
             <UFormField :label="t('crops.daysToMaturity')"><UInputNumber v-model="form.daysToMaturity" class="w-full" /></UFormField>
             <UFormField :label="t('crops.spacingCm')"><UInputNumber v-model="form.spacingCm" class="w-full" /></UFormField>
           </div>
-          <UFormField :label="t('crops.seasons')"><USelectMenu v-model="form.season" :items="seasonOptions" multiple class="w-full" /></UFormField>
+          <UFormField :label="t('crops.seasons')"><USelectMenu v-model="form.season" :items="seasonOptions" value-key="value" multiple class="w-full" /></UFormField>
         </div>
       </template>
       <template #footer>
