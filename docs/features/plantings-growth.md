@@ -11,8 +11,8 @@ Three UX capabilities on the Plantings page (`/plantings`):
    pruning, and observations per planting (with notes). Consuming an input
    auto-deducts it from inventory.
 
-> Source: `app/components/GrowthTimeline.vue`, `app/components/ActivityLog.vue`,
-> `app/pages/plantings/index.vue`, `app/components/QuickLogModal.vue`.
+> Source: `app/components/charts/GrowthTimeline.vue`, `app/components/charts/ActivityLog.vue`,
+> `app/pages/plantings/index.vue`, `app/components/overlays/QuickLogModal.vue`.
 > Tests: `test/nuxt/plantings.test.ts`, `test/nuxt/activities.test.ts`.
 
 ---

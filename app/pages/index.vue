@@ -10,7 +10,7 @@ const {
   financeTrend, seasonProgress, netProfit, totalIncome, activity, cropById,
   inventoryValue, assetValue, lowStockItems, maintenanceDue
 } = store
-const { currency, number, todayLabel } = useFormat()
+const { currency, compactCurrency, number, todayLabel } = useFormat()
 const { t } = useI18n()
 const greetingKey = computed(() => {
   const h = new Date().getHours()
@@ -132,13 +132,13 @@ const quickLogOpen = ref(false)
         <NuxtLinkLocale to="/inventory" class="block">
           <GlassCard hover :delay="0.05" class="p-4 h-full">
             <div class="flex items-center gap-2 mb-1"><UIcon name="i-lucide-boxes" class="text-accent text-sm" /><span class="text-xs text-muted uppercase tracking-wider">{{ t('dashboard.inventoryValue') }}</span></div>
-            <div class="display-font text-xl font-bold">{{ currency(inventoryValue) }}</div>
+            <div class="display-font text-xl font-bold whitespace-nowrap tabular-nums overflow-hidden text-ellipsis" :title="currency(inventoryValue)">{{ compactCurrency(inventoryValue) }}</div>
           </GlassCard>
         </NuxtLinkLocale>
         <NuxtLinkLocale to="/assets" class="block">
           <GlassCard hover :delay="0.1" class="p-4 h-full">
             <div class="flex items-center gap-2 mb-1"><UIcon name="i-lucide-tractor" class="text-accent text-sm" /><span class="text-xs text-muted uppercase tracking-wider">{{ t('dashboard.assetValue') }}</span></div>
-            <div class="display-font text-xl font-bold">{{ currency(assetValue) }}</div>
+            <div class="display-font text-xl font-bold whitespace-nowrap tabular-nums overflow-hidden text-ellipsis" :title="currency(assetValue)">{{ compactCurrency(assetValue) }}</div>
           </GlassCard>
         </NuxtLinkLocale>
         <NuxtLinkLocale to="/inventory" class="block">

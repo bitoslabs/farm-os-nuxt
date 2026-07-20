@@ -5,7 +5,7 @@
  *  - log events (harvest/finance): append, deduped by a content signature
  */
 import { GARDEN_KINDS } from '~/types/garden-kinds'
-import type { GardenState, Plot, CropVariety, Planting, Harvest, Task, InventoryItem, FinanceRecord, GrowthStage, LivestockProfile, LivestockHealthLog, LivestockProductionLog, FarmAsset, MaintenanceLog, PlantingActivity } from '~/types/garden'
+import type { GardenState, Plot, CropVariety, Planting, Harvest, Task, InventoryItem, FinanceRecord, GrowthStage, LivestockProfile, LivestockHealthLog, LivestockProductionLog, FarmAsset, MaintenanceLog, PlantingActivity, LivestockMovement, LivestockMovementType, ProductType, HealthType, AssetCategory, AssetStatus, AssetCondition, MaintenanceType, ActivityType } from '~/types/garden'
 
 const STAGE_ORDER: GrowthStage[] = ['planned', 'seeded', 'germinating', 'seedling', 'vegetative', 'flowering', 'fruiting', 'ready', 'harvested']
 
@@ -18,6 +18,7 @@ const KIND_TO_COLLECTION: Record<number, keyof GardenState> = {
   [GARDEN_KINDS.INPUT_INVENTORY]: 'inventory',
   [GARDEN_KINDS.FARM_ASSET]: 'assets',
   [GARDEN_KINDS.GROWTH_LOG]: 'activities',
+  [GARDEN_KINDS.LIVESTOCK_MOVEMENT]: 'livestockMovements',
   [GARDEN_KINDS.LIVESTOCK_PROFILE]: 'livestock'
 }
 
@@ -34,6 +35,13 @@ function metadata(state: GardenState) {
   return { versions, ids }
 }
 
+const MOVEMENT_TYPES: ReadonlySet<LivestockMovementType> = new Set(['purchase', 'sale', 'birth', 'death', 'transfer_in', 'transfer_out', 'adjustment'])
+const PRODUCT_TYPES: ReadonlySet<ProductType> = new Set(['eggs', 'milk', 'wool', 'meat', 'offspring', 'other'])
+const HEALTH_TYPES: ReadonlySet<HealthType> = new Set(['vaccination', 'treatment', 'checkup', 'illness'])
+
+function oneOf<T extends string>(value: string | undefined, allowed: ReadonlySet<T>, fallback: T): T {
+  return value && allowed.has(value as T) ? (value as T) : fallback
+}
 function tagVal(e: NostrEvent, name: string): string | undefined {
   return e.tags.find((t) => t[0] === name)?.[1]
 }
@@ -175,7 +183,9 @@ export function parseEvent(e: NostrEvent): { collection: keyof GardenState; enti
         description: c.description,
         plotId: tagVal(e, 'plot') || undefined,
         cropId: tagVal(e, 'crop') || undefined,
-        plantingId: tagVal(e, 'planting') || undefined
+        plantingId: tagVal(e, 'planting') || undefined,
+        sourceType: c.sourceType,
+        sourceId: c.sourceId
       }
       return { collection: 'finance', entity: f }
     }
@@ -190,6 +200,7 @@ export function parseEvent(e: NostrEvent): { collection: keyof GardenState; enti
         sex: c.sex,
         count: c.count ?? 1,
         birthDate: isoFromUnix(tagVal(e, 'birthDate')),
+        parentAnimalId: tagVal(e, 'parent') || c.parentAnimalId,
         status: (tagVal(e, 'status') as any) || 'active',
         notes: c.notes
       }
@@ -214,13 +225,33 @@ export function parseEvent(e: NostrEvent): { collection: keyof GardenState; enti
       const p: LivestockProductionLog = {
         id: e.id,
         animalId: tagVal(e, 'animal') || '',
-        product: (tagVal(e, 'product') as any) || 'other',
+        product: oneOf(tagVal(e, 'product'), PRODUCT_TYPES, 'other'),
         quantity: Number(tagVal(e, 'qty')) || 0,
         unit: (tagVal(e, 'unit') as any) || 'piece',
         date: isoFromUnix(tagVal(e, 'date')) || new Date(0).toISOString(),
         notes: c.notes
       }
       return { collection: 'livestockProduction', entity: p }
+    }
+    case GARDEN_KINDS.LIVESTOCK_MOVEMENT: {
+      const c = content(e)
+      const m: LivestockMovement = {
+        id: e.id,
+        animalId: tagVal(e, 'animal') || '',
+        parentAnimalId: tagVal(e, 'parent') || undefined,
+        type: oneOf(tagVal(e, 'type'), MOVEMENT_TYPES, 'adjustment'),
+        count: Math.max(0, Math.floor(Number(tagVal(e, 'count')) || 0)),
+        date: isoFromUnix(tagVal(e, 'date')) || new Date(0).toISOString(),
+        reason: c.reason,
+        counterparty: c.counterparty,
+        reference: c.reference,
+        unitPrice: c.unitPrice,
+        totalAmount: c.totalAmount,
+        currency: c.currency,
+        financeId: c.financeId,
+        notes: c.notes
+      }
+      return { collection: 'livestockMovements', entity: m }
     }
     case GARDEN_KINDS.FARM_ASSET: {
       const a: FarmAsset = {
@@ -280,6 +311,7 @@ function logSig(collection: string, ent: any): string {
   if (collection === 'livestockProduction') return `lp:${ent.animalId}:${ent.product}:${ent.quantity}:${ent.date}`
   if (collection === 'maintenanceLogs') return `m:${ent.assetId}:${ent.type}:${ent.date}:${ent.description}`
   if (collection === 'activities') return `pa:${ent.plantingId}:${ent.type}:${ent.date}:${ent.note ?? ''}`
+  if (collection === 'livestockMovements') return `lm:${ent.animalId}:${ent.type}:${ent.count}:${ent.date}`
   return ent.id
 }
 
@@ -352,7 +384,7 @@ export function mergeEvents(state: GardenState, events: NostrEvent[]): number {
     }
 
     // for logs, dedupe by signature
-    if ((collection === 'harvests' || collection === 'finance' || collection === 'livestockHealth' || collection === 'livestockProduction' || collection === 'maintenanceLogs' || collection === 'activities') && arr.some((x) => logSig(collection, x) === logSig(collection, entity))) {
+    if ((collection === 'harvests' || collection === 'finance' || collection === 'livestockHealth' || collection === 'livestockProduction' || collection === 'livestockMovements' || collection === 'maintenanceLogs' || collection === 'activities') && arr.some((x) => logSig(collection, x) === logSig(collection, entity))) {
       if (e.id) meta.ids.add(e.id)
       continue
     }

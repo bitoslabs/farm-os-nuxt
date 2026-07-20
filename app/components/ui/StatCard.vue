@@ -20,7 +20,8 @@ const props = withDefaults(defineProps<{
   delay: 0
 })
 
-const { number, currency: formatCurrency } = useFormat()
+const { number, currency: formatCurrency, compactCurrency } = useFormat()
+const { settings } = useSettings()
 const display = ref(0)
 const started = ref(false)
 
@@ -42,15 +43,18 @@ onMounted(() => {
 
 const formatted = computed(() => {
   if (props.currency) {
+    if (Math.abs(props.value) >= 1_000_000) return compactCurrency(display.value)
+    const decimals = settings.value.locale.currency === 'LAK' ? 0 : props.decimals
     return formatCurrency(display.value, undefined, {
-      minimumFractionDigits: props.decimals,
-      maximumFractionDigits: props.decimals
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
     })
   }
   return (props.prefix ?? '') +
     number(display.value, { minimumFractionDigits: props.decimals, maximumFractionDigits: props.decimals }) +
     (props.suffix ?? '')
 })
+const fullCurrencyValue = computed(() => props.currency ? formatCurrency(props.value, undefined, { maximumFractionDigits: 0 }) : '')
 
 const trendGood = computed(() =>
   props.trend === undefined ? null
@@ -85,7 +89,11 @@ const trendBg = computed(() =>
       </span>
     </div>
     <div class="text-xs text-muted uppercase tracking-wider mb-1.5">{{ label }}</div>
-    <div class="display-font text-3xl font-bold mb-3">{{ formatted }}</div>
+    <div
+      class="display-font text-3xl font-bold mb-3 whitespace-nowrap tabular-nums overflow-hidden text-ellipsis"
+      :title="fullCurrencyValue || undefined"
+      :aria-label="fullCurrencyValue ? `${label}: ${fullCurrencyValue}` : undefined"
+    >{{ formatted }}</div>
     <Sparkline v-if="spark?.length" :data="spark" :color="sparkColor ?? 'var(--accent)'" />
   </div>
 </template>

@@ -97,7 +97,7 @@ export function inventoryEvent(item: InventoryItem): EventTemplate {
 export function financeEvent(f: FinanceRecord): EventTemplate {
   return {
     kind: f.type === 'expense' ? GARDEN_KINDS.EXPENSE_RECORD : GARDEN_KINDS.INCOME_RECORD,
-    content: JSON.stringify({ amount: f.amount, currency: f.currency, description: f.description }),
+    content: JSON.stringify({ amount: f.amount, currency: f.currency, description: f.description, sourceType: f.sourceType, sourceId: f.sourceId }),
     tags: [
       ['category', f.category],
       ...(f.plotId ? [['plot', f.plotId]] : []),
@@ -163,10 +163,11 @@ export function profileMetadataEvent(name: string, about: string, picture: strin
 export function livestockEvent(l: import('~/types/garden').LivestockProfile): EventTemplate {
   return {
     kind: GARDEN_KINDS.LIVESTOCK_PROFILE,
-    content: JSON.stringify({ breed: l.breed, tagId: l.tagId, sex: l.sex, count: l.count, birthDate: l.birthDate, notes: l.notes }),
+    content: JSON.stringify({ breed: l.breed, tagId: l.tagId, sex: l.sex, count: l.count, birthDate: l.birthDate, parentAnimalId: l.parentAnimalId, notes: l.notes }),
     tags: [
       ['d', l.id], ['name', l.name], ['species', l.species],
       ['status', l.status],
+      ...(l.parentAnimalId ? [['parent', l.parentAnimalId]] : []),
       ...(l.birthDate ? [['birthDate', String(Math.floor(new Date(l.birthDate).getTime() / 1000))]] : [])
     ]
   }
@@ -190,6 +191,22 @@ export function livestockProductionEvent(p: import('~/types/garden').LivestockPr
     tags: [
       ['animal', p.animalId], ['product', p.product], ['qty', String(p.quantity)],
       ['unit', p.unit], ['date', String(Math.floor(new Date(p.date).getTime() / 1000))]
+    ]
+  }
+}
+
+export function livestockMovementEvent(m: import('~/types/garden').LivestockMovement): EventTemplate {
+  return {
+    kind: GARDEN_KINDS.LIVESTOCK_MOVEMENT,
+    content: JSON.stringify({
+      reason: m.reason, counterparty: m.counterparty, reference: m.reference,
+      unitPrice: m.unitPrice, totalAmount: m.totalAmount, currency: m.currency,
+      financeId: m.financeId, notes: m.notes
+    }),
+    tags: [
+      ['animal', m.animalId], ['type', m.type], ['count', String(m.count)],
+      ...(m.parentAnimalId ? [['parent', m.parentAnimalId]] : []),
+      ['date', String(Math.floor(new Date(m.date).getTime() / 1000))]
     ]
   }
 }

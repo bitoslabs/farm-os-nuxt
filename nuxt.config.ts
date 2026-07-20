@@ -12,6 +12,16 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  // Keep component names stable while organizing files by responsibility.
+  // For example, `components/ui/GlassCard.vue` remains available as
+  // `<GlassCard>` instead of `<UiGlassCard>`.
+  components: [
+    {
+      path: '~/components',
+      pathPrefix: false
+    }
+  ],
+
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'en',

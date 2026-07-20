@@ -75,6 +75,8 @@ export const GARDEN_KINDS = {
   LIVESTOCK_HEALTH_LOG: 32061,
   /** Animal production log (eggs, milk, etc.) */
   LIVESTOCK_PRODUCTION_LOG: 32062,
+  /** Livestock movement (purchase/sale/death/transfer/adjustment) */
+  LIVESTOCK_MOVEMENT: 32063,
 
   // --- Pest & Disease (32070–32079) ---
   /** Pest/disease sighting report */

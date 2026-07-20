@@ -61,7 +61,8 @@
       { "id": "f3", "type": "income", "category": "Produce sale", "amount": 90, "currency": "USD", "date": "2025-05-28T00:00:00.000Z", "description": "Basil — restaurant" },
       { "id": "f4", "type": "expense", "category": "Inputs", "amount": 40, "currency": "USD", "date": "2025-06-10T00:00:00.000Z", "description": "Fertilizer + neem oil", "plotId": "plt_gh1" },
       { "id": "f5", "type": "expense", "category": "Labor", "amount": 30, "currency": "USD", "date": "2025-06-15T00:00:00.000Z", "description": "Bed prep help" },
-      { "id": "f6", "type": "expense", "category": "Equipment", "amount": 15, "currency": "USD", "date": "2025-05-20T00:00:00.000Z", "description": "Pump impeller seal" }
+      { "id": "f6", "type": "expense", "category": "Equipment", "amount": 15, "currency": "USD", "date": "2025-05-20T00:00:00.000Z", "description": "Pump impeller seal" },
+      { "id": "f7", "type": "income", "category": "Livestock sale", "amount": 8, "currency": "USD", "date": "2025-05-15T00:00:00.000Z", "description": "sale · Layers", "sourceType": "livestock", "sourceId": "mv_chicken_sale" }
     ],
     "livestock": [
       { "id": "lv_chickens", "name": "Layers", "species": "chicken", "breed": "Local", "tagId": "FLK-01", "sex": "mixed", "count": 24, "status": "active", "notes": "Laying flock" },
@@ -76,6 +77,11 @@
     "livestockProduction": [
       { "id": "lp1", "animalId": "lv_chickens", "product": "eggs", "quantity": 18, "unit": "piece", "date": "2025-07-15T00:00:00.000Z", "notes": "Daily average" },
       { "id": "lp2", "animalId": "lv_cow", "product": "milk", "quantity": 6, "unit": "liter", "date": "2025-07-15T00:00:00.000Z" }
+    ],
+    "livestockMovements": [
+      { "id": "mv_chicken_buy", "animalId": "lv_chickens", "type": "purchase", "count": 25, "date": "2024-09-01T00:00:00.000Z", "counterparty": "Somchai Farm", "totalAmount": 150, "currency": "USD" },
+      { "id": "mv_chicken_sale", "animalId": "lv_chickens", "type": "sale", "count": 1, "date": "2025-05-15T00:00:00.000Z", "counterparty": "Morning Market", "totalAmount": 8, "currency": "USD", "financeId": "f7" },
+      { "id": "mv_cow_buy", "animalId": "lv_cow", "type": "purchase", "count": 1, "date": "2020-03-12T00:00:00.000Z", "counterparty": "District breeder", "totalAmount": 600, "currency": "USD" }
     ],
     "assets": [
       { "id": "ast_tractor", "name": "Kubota Tractor", "category": "vehicle", "assetTag": "EQ-001", "serialNumber": "KUB-2023-8841", "status": "active", "condition": "good", "location": "North shed", "assignedTo": "Kham", "purchaseDate": "2023-03-01T00:00:00.000Z", "purchaseCost": 18000, "currentValue": 15000, "currency": "USD", "warrantyUntil": "2026-03-01T00:00:00.000Z", "notes": "Primary field tractor" },

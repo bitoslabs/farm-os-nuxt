@@ -15,6 +15,19 @@ export function useFormat() {
     }).format(amount)
   }
 
+  /** Compact currency for space-constrained UI (for example, dashboard KPI cards). */
+  function compactCurrency(amount: number, currencyCode = settings.value.locale.currency) {
+    if (Math.abs(amount) < 1_000_000) return currency(amount, currencyCode, { maximumFractionDigits: currencyCode === 'LAK' ? 0 : 2 })
+    return new Intl.NumberFormat(localeTag.value, {
+      style: 'currency',
+      currency: currencyCode,
+      notation: 'compact',
+      compactDisplay: 'short',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 1
+    }).format(amount)
+  }
+
   function number(n: number, opts: Intl.NumberFormatOptions = {}) {
     return new Intl.NumberFormat(localeTag.value, opts).format(n)
   }
@@ -49,5 +62,5 @@ export function useFormat() {
     })
   }
 
-  return { currency, number, date, relTime, greeting, todayLabel }
+  return { currency, compactCurrency, number, date, relTime, greeting, todayLabel }
 }

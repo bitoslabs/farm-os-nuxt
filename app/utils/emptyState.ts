@@ -25,6 +25,7 @@ export function emptyState(): GardenState {
     livestock: [],
     livestockHealth: [],
     livestockProduction: [],
+    livestockMovements: [],
     assets: [],
     maintenanceLogs: [],
     activities: []

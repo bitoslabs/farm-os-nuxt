@@ -196,10 +196,17 @@ export function useNostr() {
     return publish({ kind: 5, content: '', tags: [['a', `${kind}:${pubkey}:${d}`]] })
   }
 
+  /** NIP-09 deletion of a regular (append-only) event by its id, broadcast (queued if offline). */
+  function deleteEvent(id: string): Promise<PublishResult> {
+    const pubkey = settings.value.identity.pubkey
+    if (!pubkey) return Promise.resolve({ ok: false, reason: 'not-signed-in' })
+    return publish({ kind: 5, content: '', tags: [['e', id]] })
+  }
+
   return {
     status, log, outbox, outboxCount, canSign,
     publish, publishQuiet, flushOutbox, loadOutbox,
-    fetchEvents, fetchProfile, loadFromRelays, subscribeToAuthor, deleteAddressable,
+    fetchEvents, fetchProfile, loadFromRelays, subscribeToAuthor, deleteAddressable, deleteEvent,
     writeRelays, readRelays
   }
 }

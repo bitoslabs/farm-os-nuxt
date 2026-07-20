@@ -15,13 +15,15 @@ import type {
   LivestockProductionLog,
   FarmAsset,
   MaintenanceLog,
-  PlantingActivity
+  PlantingActivity,
+  LivestockMovement
 } from '~/types/garden'
 import { emptyState } from '~/utils/emptyState'
 import {
   plotEvent, cropEvent, plantingEvent, harvestEvent,
   taskEvent, inventoryEvent, financeEvent,
   livestockEvent, livestockHealthEvent, livestockProductionEvent,
+  livestockMovementEvent,
   farmAssetEvent, maintenanceLogEvent, growthLogEvent
 } from '~/utils/event-builders'
 import { useNostr } from '~/composables/useNostr'
@@ -215,9 +217,16 @@ export function useGardenStore() {
     const i = state.value.livestock.findIndex((x) => x.id === id)
     if (i !== -1) { state.value.livestock[i] = { ...state.value.livestock[i], ...patch }; nostr.publishQuiet(livestockEvent(state.value.livestock[i])) }
   }
-  function removeLivestock(id: string) {
+  /** Block destructive deletion once a record has any history; never cascade-delete append-only logs. */
+  function removeLivestock(id: string): { ok: boolean; error?: string } {
+    const hasHistory =
+      state.value.livestockMovements.some((m) => m.animalId === id || m.parentAnimalId === id) ||
+      state.value.livestockHealth.some((h) => h.animalId === id) ||
+      state.value.livestockProduction.some((p) => p.animalId === id)
+    if (hasHistory) return { ok: false, error: 'has-history' }
     state.value.livestock = state.value.livestock.filter((x) => x.id !== id)
     nostr.deleteAddressable(GARDEN_KINDS.LIVESTOCK_PROFILE, id)
+    return { ok: true }
   }
   function addHealthLog(h: Omit<LivestockHealthLog, 'id'>) {
     const log: LivestockHealthLog = { ...h, id: newId('lh') }
@@ -225,14 +234,115 @@ export function useGardenStore() {
     nostr.publishQuiet(livestockHealthEvent(log))
     return log
   }
-  function removeHealthLog(id: string) { state.value.livestockHealth = state.value.livestockHealth.filter((x) => x.id !== id) }
+  /** Remove a health log locally and publish a NIP-09 deletion of its event. */
+  function removeHealthLog(id: string) {
+    state.value.livestockHealth = state.value.livestockHealth.filter((x) => x.id !== id)
+    nostr.deleteEvent(id)
+  }
   function addProductionLog(p: Omit<LivestockProductionLog, 'id'>) {
     const log: LivestockProductionLog = { ...p, id: newId('lp') }
     state.value.livestockProduction.push(log)
     nostr.publishQuiet(livestockProductionEvent(log))
     return log
   }
-  function removeProductionLog(id: string) { state.value.livestockProduction = state.value.livestockProduction.filter((x) => x.id !== id) }
+  /** Remove a production log locally and publish a NIP-09 deletion of its event. */
+  function removeProductionLog(id: string) {
+    state.value.livestockProduction = state.value.livestockProduction.filter((x) => x.id !== id)
+    nostr.deleteEvent(id)
+  }
+
+  // ---- Lifecycle movements (kind 32063) — atomic count + finance + events ----
+  /** Validate and apply a movement: updates head count, sets terminal status, and creates a linked finance record. */
+  function recordLivestockMovement(input: Omit<LivestockMovement, 'id' | 'financeId'>): { ok: boolean; movement?: LivestockMovement; error?: string } {
+    const animal = state.value.livestock.find((l) => l.id === input.animalId)
+    if (!animal) return { ok: false, error: 'not-found' }
+    const count = Math.floor(input.count)
+    if (!Number.isFinite(count) || count <= 0) return { ok: false, error: 'invalid-count' }
+    const isOut = input.type === 'sale' || input.type === 'death' || input.type === 'transfer_out'
+    const isIn = input.type === 'purchase' || input.type === 'birth' || input.type === 'transfer_in'
+    if (isOut && count > animal.count) return { ok: false, error: 'over-limit' }
+    if (input.type === 'death' && !input.reason?.trim()) return { ok: false, error: 'reason-required' }
+
+    const movement: LivestockMovement = { ...input, count, id: newId('mv') }
+
+    // linked finance (purchase → expense, sale → income, death → optional disposal expense)
+    const amount = input.totalAmount ?? (input.unitPrice ? input.unitPrice * count : undefined)
+    if (amount && amount > 0 && (input.type === 'purchase' || input.type === 'sale' || input.type === 'death')) {
+      const finance: FinanceRecord = {
+        id: newId('f'),
+        type: input.type === 'sale' ? 'income' : 'expense',
+        category: input.type === 'sale' ? 'Livestock sale' : 'Livestock',
+        amount,
+        currency: input.currency || 'USD',
+        date: input.date,
+        description: `${input.type} · ${animal.name}`,
+        sourceType: 'livestock',
+        sourceId: movement.id
+      }
+      state.value.finance.push(finance)
+      movement.financeId = finance.id
+      nostr.publishQuiet(financeEvent(finance))
+    }
+
+    // apply head count + terminal status
+    if (isIn) animal.count += count
+    else if (isOut) {
+      animal.count -= count
+      if (animal.count <= 0) {
+        animal.count = 0
+        animal.status = input.type === 'sale' ? 'sold' : input.type === 'death' ? 'deceased' : 'transferred'
+      }
+    }
+
+    state.value.livestockMovements.push(movement)
+    nostr.publishQuiet(livestockMovementEvent(movement))
+    nostr.publishQuiet(livestockEvent(animal))
+    return { ok: true, movement }
+  }
+  /** Acquisition-first creation: profile (count 0) + a purchase movement that sets head count + linked expense. */
+  function acquireLivestock(profile: Omit<LivestockProfile, 'id' | 'count' | 'status'>, purchase: { count: number; date: string; counterparty?: string; unitPrice?: number; totalAmount?: number; currency?: string; reference?: string; notes?: string }) {
+    const animal: LivestockProfile = { ...profile, id: newId('lv'), count: 0, status: 'active' }
+    state.value.livestock.push(animal)
+    nostr.publishQuiet(livestockEvent(animal))
+    const res = recordLivestockMovement({
+      animalId: animal.id, type: 'purchase', count: purchase.count, date: purchase.date,
+      counterparty: purchase.counterparty, unitPrice: purchase.unitPrice, totalAmount: purchase.totalAmount,
+      currency: purchase.currency, reference: purchase.reference, notes: purchase.notes
+    })
+    return { profile: animal, movement: res.movement }
+  }
+  /** Create an offspring record and its parent-linked birth movement. The parent's count is not changed. */
+  function recordLivestockBirth(parentAnimalId: string, input: {
+    name: string; count: number; date: string; breed?: string; tagId?: string
+    sex?: LivestockProfile['sex']; notes?: string
+  }): { ok: boolean; profile?: LivestockProfile; movement?: LivestockMovement; error?: string } {
+    const parent = state.value.livestock.find((l) => l.id === parentAnimalId)
+    const count = Math.floor(input.count)
+    if (!parent) return { ok: false, error: 'parent-not-found' }
+    if (!input.name.trim() || !Number.isFinite(count) || count <= 0) return { ok: false, error: 'invalid-birth' }
+
+    const animal: LivestockProfile = {
+      id: newId('lv'), name: input.name.trim(), species: parent.species,
+      breed: input.breed || parent.breed, tagId: input.tagId || undefined,
+      sex: input.sex || 'mixed', count: 0, birthDate: input.date,
+      parentAnimalId, status: 'active', notes: input.notes || undefined
+    }
+    state.value.livestock.push(animal)
+    const res = recordLivestockMovement({
+      animalId: animal.id, parentAnimalId, type: 'birth', count, date: input.date,
+      notes: input.notes || undefined
+    })
+    if (!res.ok) {
+      state.value.livestock = state.value.livestock.filter((l) => l.id !== animal.id)
+      return { ok: false, error: res.error }
+    }
+    return { ok: true, profile: animal, movement: res.movement }
+  }
+  /** Remove a movement (pre-sync correction) and publish a NIP-09 deletion. Does not reverse applied count/finance. */
+  function removeMovement(id: string) {
+    state.value.livestockMovements = state.value.livestockMovements.filter((x) => x.id !== id)
+    nostr.deleteEvent(id)
+  }
 
   // ---- CRUD: Assets & Maintenance ----
   function addAsset(a: Omit<FarmAsset, 'id'>) {
@@ -334,6 +444,8 @@ export function useGardenStore() {
 
   // ---- Assets & Maintenance aggregates ----
   const assetById = computed(() => keyBy(state.value.assets, 'id'))
+  const livestockById = computed(() => keyBy(state.value.livestock, 'id'))
+  const activeLivestock = computed(() => state.value.livestock.filter((l) => l.status === 'active'))
 
   /** total book value of in-service assets (excludes retired / lost) */
   const assetValue = computed(() =>
@@ -417,6 +529,9 @@ export function useGardenStore() {
     livestock: computed(() => state.value.livestock),
     livestockHealth: computed(() => state.value.livestockHealth),
     livestockProduction: computed(() => state.value.livestockProduction),
+    livestockMovements: computed(() => state.value.livestockMovements),
+    livestockById,
+    activeLivestock,
     addLivestock,
     updateLivestock,
     removeLivestock,
@@ -424,6 +539,10 @@ export function useGardenStore() {
     removeHealthLog,
     addProductionLog,
     removeProductionLog,
+    recordLivestockMovement,
+    acquireLivestock,
+    recordLivestockBirth,
+    removeMovement,
     addAsset,
     updateAsset,
     removeAsset,

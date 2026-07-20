@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useGardenStore } from '~/composables/useGardenStore'
 import { useListControls, type SortOption } from '~/composables/useListControls'
-import type { LivestockProfile, LivestockSpecies, HealthType, ProductType, LivestockStatus } from '~/types/garden'
+import type { LivestockProfile, LivestockSpecies, HealthType, ProductType, LivestockStatus, LivestockMovementType } from '~/types/garden'
 
 const store = useGardenStore()
 const { livestock, livestockHealth, livestockProduction } = store
+const { settings } = useSettings()
 const { number, currency, relTime, date: fmtDate } = useFormat()
 const { t } = useI18n()
 const toast = useToast()
@@ -56,16 +57,26 @@ const { search, sortKey, sortDir, viewMode, sortItems, list, applySort } = useLi
 const open = ref(false); const editingId = ref<string | null>(null)
 const emptyForm = () => ({ name: '', species: 'chicken' as LivestockSpecies, breed: '', tagId: '', sex: 'female' as 'male' | 'female' | 'mixed', count: 1, birthDate: '', status: 'active' as LivestockStatus, notes: '' })
 const form = reactive(emptyForm())
+// acquisition (purchase) details, shown only when creating
+const acq = reactive({ enabled: true, date: new Date().toISOString().slice(0, 10), supplier: '', unitPrice: 0, totalAmount: 0, currency: settings.value.locale.currency, reference: '', notes: '' })
 const speciesOpts = computed(() => (['chicken','duck','cow','pig','goat','sheep','fish','other'] as LivestockSpecies[]).map((s) => ({ label: t('enums.species.' + s), value: s })))
 const statusOpts = computed(() => (['active','sold','deceased'] as LivestockStatus[]).map((s) => ({ label: t('enums.livestockStatus.' + s), value: s })))
 const sexOpts = computed(() => (['male','female','mixed'] as const).map((s) => ({ label: t('enums.sex.' + s), value: s })))
-function openCreate() { editingId.value = null; Object.assign(form, emptyForm()); open.value = true }
+function openCreate() { editingId.value = null; Object.assign(form, emptyForm()); Object.assign(acq, { enabled: true, date: new Date().toISOString().slice(0, 10), supplier: '', unitPrice: 0, totalAmount: 0, currency: settings.value.locale.currency, reference: '', notes: '' }); open.value = true }
 function openEdit(a: LivestockProfile) { editingId.value = a.id; Object.assign(form, { name: a.name, species: a.species, breed: a.breed || '', tagId: a.tagId || '', sex: a.sex || 'mixed', count: a.count, birthDate: a.birthDate ? a.birthDate.slice(0, 10) : '', status: a.status, notes: a.notes || '' }); open.value = true }
 function save() {
   if (!form.name.trim()) return
-  const payload = { ...form, birthDate: form.birthDate ? new Date(form.birthDate).toISOString() : undefined }
-  if (editingId.value) { store.updateLivestock(editingId.value, payload); toast.add({ title: t('crud.saved'), icon: 'i-lucide-check', color: 'success' }) }
-  else { store.addLivestock(payload); toast.add({ title: t('crud.created'), icon: 'i-lucide-plus', color: 'success' }) }
+  const birthDate = form.birthDate ? new Date(form.birthDate).toISOString() : undefined
+  if (editingId.value) {
+    store.updateLivestock(editingId.value, { ...form, birthDate })
+    toast.add({ title: t('crud.saved'), icon: 'i-lucide-check', color: 'success' })
+  } else {
+    store.acquireLivestock(
+      { name: form.name, species: form.species, breed: form.breed || undefined, tagId: form.tagId || undefined, sex: form.sex, birthDate, notes: form.notes || undefined },
+      { count: Math.max(1, Math.floor(form.count)), date: acq.date ? new Date(acq.date).toISOString() : new Date().toISOString(), counterparty: acq.supplier || undefined, unitPrice: acq.unitPrice || undefined, totalAmount: acq.totalAmount || undefined, currency: acq.currency, reference: acq.reference || undefined, notes: acq.notes || undefined }
+    )
+    toast.add({ title: t('crud.created'), icon: 'i-lucide-plus', color: 'success' })
+  }
   open.value = false
 }
 
@@ -95,19 +106,36 @@ function saveProduction() {
 }
 const delProd = ref<string | null>(null); const delProdOpen = ref(false)
 
-// ---- delete animal ----
+// ---- delete animal (blocked when history exists) ----
 const delOpen = ref(false); const delTarget = ref<string | null>(null)
 function askDelete(id: string) { delTarget.value = id; delOpen.value = true }
-function doDelete() { if (delTarget.value) { store.removeLivestock(delTarget.value); toast.add({ title: t('crud.deleted'), icon: 'i-lucide-trash-2', color: 'warning' }) } }
+function doDelete() {
+  if (!delTarget.value) return
+  const res = store.removeLivestock(delTarget.value)
+  toast.add({ title: res.ok ? t('crud.deleted') : t('livestock.hasHistoryDelete'), icon: res.ok ? 'i-lucide-trash-2' : 'i-lucide-alert-triangle', color: 'warning' })
+}
+
+// ---- lifecycle movements ----
+const moveOpen = ref(false); const moveType = ref<LivestockMovementType>('sale'); const moveAnimalId = ref('')
+function openMovement(a: LivestockProfile, type: LivestockMovementType) { moveAnimalId.value = a.id; moveType.value = type; moveOpen.value = true }
+const birthOpen = ref(false); const birthParentId = ref('')
+function openBirth(a: LivestockProfile) { birthParentId.value = a.id; birthOpen.value = true }
 
 function animalName(id: string) { return livestock.value.find((a) => a.id === id)?.name || '—' }
 function rowActions(a: LivestockProfile) {
-  return [[
-    { label: t('livestock.healthLog'), icon: 'i-lucide-stethoscope', onSelect: () => openHealth(a) },
-    { label: t('livestock.productionLog'), icon: 'i-lucide-egg', onSelect: () => openProduction(a) },
-    { label: t('crud.edit'), icon: 'i-lucide-pencil', onSelect: () => openEdit(a) },
-    { label: t('crud.delete'), icon: 'i-lucide-trash-2', color: 'error', onSelect: () => askDelete(a.id) }
-  ]]
+  type Action = { label: string; icon?: string; color?: string; onSelect: () => void }
+  const items: Action[] = [{ label: t('livestock.viewDetail'), icon: 'i-lucide-eye', onSelect: () => navigateTo(`/livestock/${a.id}`) }]
+  if (a.status === 'active') {
+    items.push({ label: t('livestock.healthLog'), icon: 'i-lucide-stethoscope', onSelect: () => openHealth(a) })
+    items.push({ label: t('livestock.productionLog'), icon: 'i-lucide-egg', onSelect: () => openProduction(a) })
+    items.push({ label: t('livestock.recordBirth'), icon: 'i-lucide-baby', onSelect: () => openBirth(a) })
+    items.push({ label: t('livestock.recordSale'), icon: 'i-lucide-hand-coins', onSelect: () => openMovement(a, 'sale') })
+    items.push({ label: t('livestock.recordDeath'), icon: 'i-lucide-skull', onSelect: () => openMovement(a, 'death') })
+    items.push({ label: t('livestock.recordTransfer'), icon: 'i-lucide-arrow-up-from-line', onSelect: () => openMovement(a, 'transfer_out') })
+  }
+  items.push({ label: t('crud.edit'), icon: 'i-lucide-pencil', onSelect: () => openEdit(a) })
+  items.push({ label: t('crud.delete'), icon: 'i-lucide-trash-2', color: 'error', onSelect: () => askDelete(a.id) })
+  return [items]
 }
 const healthList = computed(() => [...livestockHealth.value].sort((a, b) => b.date.localeCompare(a.date)))
 const prodList = computed(() => [...livestockProduction.value].sort((a, b) => b.date.localeCompare(a.date)))
@@ -148,10 +176,10 @@ const prodList = computed(() => [...livestockProduction.value].sort((a, b) => b.
         <USelect v-model="speciesFilter" :items="speciesItems" class="w-44" />
       </ListToolbar>
       <div v-if="list.length && viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <GlassCard v-for="a in list" :key="a.id" hover class="p-5">
+        <GlassCard v-for="a in list" :key="a.id" hover class="p-5 cursor-pointer" @click="navigateTo(`/livestock/${a.id}`)">
           <div class="flex items-start justify-between mb-3">
             <div class="w-11 h-11 rounded-xl bg-surface-2 flex items-center justify-center"><UIcon :name="speciesIcon[a.species]" class="text-accent text-lg" /></div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2" @click.stop>
               <UBadge variant="subtle" :color="statusColor[a.status]">{{ t('enums.livestockStatus.' + a.status) }}</UBadge>
               <UDropdownMenu :items="rowActions(a)" :content="{ align: 'end' }"><button class="w-8 h-8 rounded-lg flex items-center justify-center text-muted-2 hover:bg-surface hover:text-fg transition"><UIcon name="i-lucide-ellipsis-vertical" /></button></UDropdownMenu>
             </div>
@@ -184,7 +212,7 @@ const prodList = computed(() => [...livestockProduction.value].sort((a, b) => b.
               </tr>
             </thead>
             <tbody>
-              <tr v-for="a in list" :key="a.id" class="border-b border-app last:border-0 transaction-row">
+              <tr v-for="a in list" :key="a.id" class="border-b border-app last:border-0 transaction-row cursor-pointer" @click="navigateTo(`/livestock/${a.id}`)">
                 <td class="px-5 py-4">
                   <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-lg bg-surface-2 flex items-center justify-center"><UIcon :name="speciesIcon[a.species]" class="text-accent" /></div>
@@ -195,7 +223,7 @@ const prodList = computed(() => [...livestockProduction.value].sort((a, b) => b.
                 <td class="px-5 py-4"><UBadge variant="subtle" :color="statusColor[a.status]">{{ t('enums.livestockStatus.' + a.status) }}</UBadge></td>
                 <td class="px-5 py-4 text-right">{{ number(a.count) }}</td>
                 <td class="px-5 py-4 text-muted whitespace-nowrap">{{ a.birthDate ? fmtDate(a.birthDate) : '—' }}</td>
-                <td class="px-5 py-4 text-right">
+                <td class="px-5 py-4 text-right" @click.stop>
                   <UDropdownMenu :items="rowActions(a)" :content="{ align: 'end' }"><button class="w-8 h-8 rounded-lg inline-flex items-center justify-center text-muted-2 hover:bg-surface hover:text-fg transition"><UIcon name="i-lucide-ellipsis-vertical" /></button></UDropdownMenu>
                 </td>
               </tr>
@@ -260,6 +288,21 @@ const prodList = computed(() => [...livestockProduction.value].sort((a, b) => b.
           </div>
           <UFormField :label="t('livestock.birthDate')"><UInput v-model="form.birthDate" type="date" class="w-full" /></UFormField>
           <UFormField :label="t('livestock.notes')"><UTextarea v-model="form.notes" :rows="2" class="w-full" /></UFormField>
+
+          <!-- acquisition / purchase details (new records only) -->
+          <div v-if="!editingId" class="pt-2 border-t border-app space-y-4">
+            <div class="text-xs text-muted uppercase tracking-wider flex items-center gap-1.5"><UIcon name="i-lucide-shopping-cart" class="text-[10px]" />{{ t('livestock.acquire') }}</div>
+            <div class="grid grid-cols-2 gap-4">
+              <UFormField :label="t('livestock.supplier')"><UInput v-model="acq.supplier" class="w-full" /></UFormField>
+              <UFormField :label="t('common.date')"><UInput v-model="acq.date" type="date" class="w-full" /></UFormField>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <UFormField :label="t('livestock.unitPrice')"><UInputNumber v-model="acq.unitPrice" :step="0.5" class="w-full" /></UFormField>
+              <UFormField :label="t('livestock.totalAmount')"><UInputNumber v-model="acq.totalAmount" :step="0.5" class="w-full" /></UFormField>
+              <UFormField :label="t('sec.currency')"><UInput v-model="acq.currency" class="w-full" /></UFormField>
+            </div>
+            <UFormField :label="t('livestock.reference')"><UInput v-model="acq.reference" class="w-full" /></UFormField>
+          </div>
         </div>
       </template>
       <template #footer>
@@ -322,5 +365,9 @@ const prodList = computed(() => [...livestockProduction.value].sort((a, b) => b.
     <ConfirmModal v-model:open="delOpen" @confirm="doDelete" />
     <ConfirmModal v-model:open="delHealthOpen" @confirm="() => { if (delHealth) store.removeHealthLog(delHealth) }" />
     <ConfirmModal v-model:open="delProdOpen" @confirm="() => { if (delProd) store.removeProductionLog(delProd) }" />
+
+    <!-- lifecycle movement modal -->
+    <LivestockMovementModal v-model:open="moveOpen" :animal-id="moveAnimalId" :type="moveType" />
+    <LivestockBirthModal v-model:open="birthOpen" :parent-id="birthParentId" />
   </div>
 </template>

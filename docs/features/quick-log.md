@@ -5,7 +5,7 @@ something in seconds without navigating to each module. One modal, a row of
 activity types, a minimal form for each. On submit the record is routed to the
 correct store action, so it lands in the right module automatically.
 
-> Source: `app/components/QuickLogModal.vue`. Triggered by the **Quick Log**
+> Source: `app/components/overlays/QuickLogModal.vue`. Triggered by the **Quick Log**
 > button on the dashboard (`app/pages/index.vue`).
 
 ---

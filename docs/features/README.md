@@ -7,6 +7,7 @@ Reference docs for the features built on top of the core system
 |---|---|---|
 | [list-controls.md](./list-controls.md) | **List Controls System** | Reusable grid/table view + sort (asc/desc) composable & components, how to wire a new list page |
 | [assets-module.md](./assets-module.md) | **Assets & Equipment Module** | Durable-property register + maintenance lifecycle, data model, Nostr kinds, user flows |
+| [livestock-module.md](./livestock-module.md) | **Livestock Module** | Spec + status for the lifecycle/detail/finance/sync work (P0 implemented) |
 | [quick-log.md](./quick-log.md) | **Quick Log** | In-place dashboard activity capture (task / expense / income / harvest / maintenance) |
 | [plantings-growth.md](./plantings-growth.md) | **Plantings Timeline & Care Log** | Table inline "Next" stage button, detail view with growth-stage timeline, and a per-planting care/activity log (watering, fertilizing, …) with inventory integration |
 | [qa-mock-data.json](./qa-mock-data.json) | **QA Test Dataset** | A full farm snapshot — import via **Settings → Data & Sync → Import backup** to test every flow |

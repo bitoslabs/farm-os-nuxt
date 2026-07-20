@@ -26,8 +26,9 @@ describe('QA mock dataset', () => {
     expect(store.plantings.value).toHaveLength(6)
     expect(store.harvests.value).toHaveLength(3)
     expect(store.inventory.value).toHaveLength(6)
-    expect(store.finance.value).toHaveLength(6)
+    expect(store.finance.value).toHaveLength(7)
     expect(store.livestock.value).toHaveLength(4)
+    expect(store.livestockMovements.value).toHaveLength(3)
     expect(store.assets.value).toHaveLength(5)
     expect(store.maintenanceLogs.value).toHaveLength(4)
     expect(store.activities.value).toHaveLength(4)
@@ -56,5 +57,8 @@ describe('QA mock dataset', () => {
     expect(store.maintenanceDue.value).toHaveLength(2)      // 2 open maintenance tasks
     expect(store.maintenanceHistory.value).toHaveLength(4)
     expect(store.plantings.value.filter((p) => p.stage === 'ready')).toHaveLength(2) // harvest-ready
+    // livestock ↔ finance link is intact (the chicken sale movement points at its income record)
+    const saleFinance = store.finance.value.find((f) => f.sourceId === 'mv_chicken_sale')
+    expect(saleFinance?.type).toBe('income')
   })
 })

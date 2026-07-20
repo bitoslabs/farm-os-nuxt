@@ -191,7 +191,7 @@ reference these variables, so a single class flip re-themes the whole app.
 - Lao scripts pair with Noto Sans Lao (planned for locale `lo`).
 
 ### 5.4 Theme control
-`app/components/ThemeToggle.vue` wraps `useColorMode()`; default preference is
+`app/components/app/ThemeToggle.vue` wraps `useColorMode()`; default preference is
 `system` with `dark` fallback (`nuxt.config.ts`).
 
 ---

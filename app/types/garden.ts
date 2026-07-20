@@ -194,11 +194,15 @@ export interface FinanceRecord {
   cropId?: ID
   /** optional planting this record relates to (for per-planting reporting) */
   plantingId?: ID
+  /** cross-module provenance: which feature created this record (e.g. 'livestock') */
+  sourceType?: string
+  /** id of the originating record in that feature (e.g. a livestock movement id) */
+  sourceId?: ID
 }
 
-// ---- Livestock (kind 32060–32062) ----
+// ---- Livestock (kind 32060–32063) ----
 export type LivestockSpecies = 'chicken' | 'duck' | 'cow' | 'pig' | 'goat' | 'sheep' | 'fish' | 'other'
-export type LivestockStatus = 'active' | 'sold' | 'deceased'
+export type LivestockStatus = 'active' | 'sold' | 'deceased' | 'transferred'
 
 export interface LivestockProfile {
   id: ID
@@ -210,6 +214,8 @@ export interface LivestockProfile {
   /** number of animals in this record (1 for an individual, N for a flock/herd) */
   count: number
   birthDate?: ISODate
+  /** Parent record when this animal or group was created through a birth event. */
+  parentAnimalId?: ID
   status: LivestockStatus
   notes?: string
 }
@@ -234,6 +240,30 @@ export interface LivestockProductionLog {
   quantity: number
   unit: Unit
   date: ISODate
+  notes?: string
+}
+
+/** Source of truth for ownership + head-count changes (kind 32063). */
+export type LivestockMovementType =
+  | 'purchase' | 'sale' | 'birth' | 'death'
+  | 'transfer_in' | 'transfer_out' | 'adjustment'
+
+export interface LivestockMovement {
+  id: ID
+  animalId: ID
+  /** Parent record for a birth; keeps the event in both parent and offspring histories. */
+  parentAnimalId?: ID
+  type: LivestockMovementType
+  count: number                 // always positive; type determines direction
+  date: ISODate
+  reason?: string               // required for death and adjustment
+  counterparty?: string         // supplier / buyer / receiving farm
+  reference?: string            // invoice / receipt / transport reference
+  unitPrice?: number
+  totalAmount?: number          // snapshot: count × unitPrice or entered total
+  currency?: string
+  /** linked finance record, if one was generated */
+  financeId?: ID
   notes?: string
 }
 
@@ -262,6 +292,7 @@ export interface GardenState {
   livestock: LivestockProfile[]
   livestockHealth: LivestockHealthLog[]
   livestockProduction: LivestockProductionLog[]
+  livestockMovements: LivestockMovement[]
   assets: FarmAsset[]
   maintenanceLogs: MaintenanceLog[]
   activities: PlantingActivity[]

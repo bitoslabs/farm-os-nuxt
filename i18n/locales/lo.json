@@ -591,7 +591,7 @@
       "harvested": "ເກັບແລ້ວ"
     },
     "unit": {
-      "piece": "ອັນ",
+      "piece": "ອັນ/ໂຕ",
       "kg": "ກກ",
       "g": "ກຣາມ",
       "bunch": "ມັດ",
@@ -692,6 +692,15 @@
       "pruning": "ຕັດແຕ່ງ",
       "observation": "ສັງເກດການ",
       "other": "ອື່ນໆ"
+    },
+    "movementType": {
+      "purchase": "ຊື້",
+      "sale": "ຂາຍ",
+      "birth": "ເກີດ",
+      "death": "ຕາຍ / ສູນເສຍ",
+      "transfer_in": "ຍ້າຍເຂົ້າ",
+      "transfer_out": "ຍ້າຍອອກ",
+      "adjustment": "ປັບປຸງຈຳນວນ"
     }
   },
   "reports": {
@@ -747,6 +756,39 @@
     "activeAnimals": "ມີຢູ່",
     "noHealth": "ບໍ່ມີບັນທຶກສຸຂະພາບ.",
     "noProduction": "ບໍ່ມີບັນທຶກຜົນຜະລິດ.",
-    "head": "ໂຕ"
+    "head": "ໂຕ",
+    "detail": "ລາຍລະອຽດສັດລ້ຽງ",
+    "history": "ປະຫວັດ",
+    "noHistory": "ຍັງບໍ່ມີປະຫວັດ.",
+    "lifetimeProduction": "ຜົນຜະລິດຕະຫຼອດຊີວິດ",
+    "healthCost": "ຄ່າບໍລິການສຸຂະພາບ",
+    "lastEvent": "ເຫດການຫາການ",
+    "currentCount": "ຈຳນວນປັດຈຸບັນ",
+    "acquire": "ຮັບເຂົ້າ / ຊື້",
+    "acquireTitle": "ຮັບສັດລ້ຽງເຂົ້າ",
+    "supplier": "ຜູ້ສະໜອງ",
+    "buyer": "ຜູ້ຊື້",
+    "unitPrice": "ລາຄາຕໍ່ໂຕ",
+    "totalAmount": "ມູນຄ່າລວມ",
+    "reference": "ເລກອ້າງອີງ",
+    "recordSale": "ບັນທຶກການຂາຍ",
+    "recordBirth": "ບັນທຶກການເກີດ",
+    "recordDeath": "ບັນທຶກການຕາຍ / ສູນເສຍ",
+    "recordTransfer": "ບັນທຶກການຍ້າຍ",
+    "movementTitle": "ບັນທຶກການເຄື່ອນໄຫວ",
+    "count": "ຈຳນວນ",
+    "available": "{n} ໂຕທີ່ມີ",
+    "confirmSale": "ຂາຍ {qty} ຈາກ {total} {name}; ເຫຼືອ {remain} ໂຕ.",
+    "confirmDeath": "{qty} ຈາກ {total} {name} ສູນເສຍ; ເຫຼືອ {remain} ໂດ.",
+    "reasonRequired": "ຕ້ອງລະບຸສາເຫດ / ເຫດຜົນ.",
+    "overLimit": "ຈຳນວນບໍ່ສາມາດເກີນຈຳນວນທີ່ມີ.",
+    "hasHistoryDelete": "ແຖບນີ້ມີປະຫວັດ ບໍ່ສາມາດລຶບໄດ້. ໃຫ້ປິດຜ່ານການຂາຍ, ຕາຍ ຫຼື ຍ້າຍ ແທນ.",
+    "linkedFinance": "ການເງິນທີ່ກ່ຽວຂ້ອງ",
+    "viewDetail": "ເບິ່ງລາຍລະອຽດ",
+    "offspring": "ລູກສັດ",
+    "parent": "ພໍ່ແມ່ພັນ",
+    "birthFor": "ສ້າງບັນທຶກລູກສັດສຳລັບ {name}. ບັນທຶກໃໝ່ຈະເຊື່ອມກັບແມ່ພັນ.",
+    "birthCreated": "ສ້າງບັນທຶກລູກສັດ {count} ໂຕແລ້ວ.",
+    "birthInvalid": "ກະລຸນາໃສ່ຊື່ ແລະ ຈຳນວນຢ່າງໜ້ອຍ 1."
   }
 }

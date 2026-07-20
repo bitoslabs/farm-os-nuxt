@@ -5,8 +5,8 @@ multi-field sort (asc/desc) + grid/table view** experience with one consistent
 toolbar. Built so adding a new list page is a few lines instead of a copy-paste
 of bespoke refs and sort switches.
 
-> Source: `app/composables/useListControls.ts`, `app/components/ListToolbar.vue`,
-> `app/components/ViewToggle.vue`, `app/components/SortableTh.vue`.
+> Source: `app/composables/useListControls.ts`, `app/components/list/ListToolbar.vue`,
+> `app/components/list/ViewToggle.vue`, `app/components/list/SortableTh.vue`.
 > Tests: `test/unit/useListControls.test.ts`.
 
 ---

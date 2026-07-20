@@ -692,6 +692,15 @@
       "pruning": "Pruning",
       "observation": "Observation",
       "other": "Other"
+    },
+    "movementType": {
+      "purchase": "Purchase",
+      "sale": "Sale",
+      "birth": "Birth",
+      "death": "Death / loss",
+      "transfer_in": "Transfer in",
+      "transfer_out": "Transfer out",
+      "adjustment": "Adjustment"
     }
   },
   "reports": {
@@ -747,6 +756,39 @@
     "activeAnimals": "Active",
     "noHealth": "No health records.",
     "noProduction": "No production records.",
-    "head": "head"
+    "head": "head",
+    "detail": "Livestock detail",
+    "history": "History",
+    "noHistory": "No history yet.",
+    "lifetimeProduction": "Lifetime production",
+    "healthCost": "Health cost",
+    "lastEvent": "Last event",
+    "currentCount": "Current count",
+    "acquire": "Acquire / purchase",
+    "acquireTitle": "Acquire livestock",
+    "supplier": "Supplier",
+    "buyer": "Buyer",
+    "unitPrice": "Unit price",
+    "totalAmount": "Total amount",
+    "reference": "Reference",
+    "recordSale": "Record sale",
+    "recordBirth": "Record birth",
+    "recordDeath": "Record death / loss",
+    "recordTransfer": "Record transfer",
+    "movementTitle": "Record movement",
+    "count": "Quantity",
+    "available": "{n} available",
+    "confirmSale": "Sell {qty} of {total} {name}; {remain} remain.",
+    "confirmDeath": "{qty} of {total} {name} lost; {remain} remain.",
+    "reasonRequired": "A cause / reason is required.",
+    "overLimit": "Quantity cannot exceed available animals.",
+    "hasHistoryDelete": "This record has history and cannot be deleted. Close it via a sale, death, or transfer instead.",
+    "linkedFinance": "Linked finance",
+    "viewDetail": "View detail",
+    "offspring": "offspring",
+    "parent": "Parent",
+    "birthFor": "Create offspring for {name}. This creates a separate livestock record linked to the parent.",
+    "birthCreated": "Created offspring record with {count} head.",
+    "birthInvalid": "Enter a name and a quantity of at least 1."
   }
 }
