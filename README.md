@@ -1,4 +1,4 @@
-# GardenOS By Vibe Coding
+# Garden & Farm Operations System (GardenOS)
 
 GardenOS is an offline-first, Nostr-native farm and garden management system.
 It supports a simple **Garden Mode** for home, school, and community gardens,
