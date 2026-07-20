@@ -1,0 +1,106 @@
+{
+  "exportedAt": "2025-07-17T00:00:00.000Z",
+  "_README": "GardenOS QA mock dataset. Import via Settings → Data & Sync → Import backup. Dates are anchored to mid-2025 so date-relative badges (warranty-soon, ready harvests) light up immediately. Only the `garden` slice is loaded — your identity/relays are untouched.",
+  "garden": {
+    "farm": {
+      "id": "farm",
+      "name": "Sok Family Farm",
+      "location": "Vientiane, Laos",
+      "totalArea": 2500,
+      "areaUnit": "m²",
+      "owner": "Kham Sok",
+      "mode": "farm",
+      "establishedYear": 2019
+    },
+    "plots": [
+      { "id": "plt_north", "name": "North Field", "type": "field", "area": 1200, "areaUnit": "m²", "soilType": "Loam", "sunExposure": "full", "zone": "North" },
+      { "id": "plt_gh1", "name": "Greenhouse 1", "type": "greenhouse", "area": 200, "areaUnit": "m²", "soilType": "Potting mix", "sunExposure": "full", "zone": "Main" },
+      { "id": "plt_bedA", "name": "Raised Bed A", "type": "bed", "area": 16, "areaUnit": "m²", "soilType": "Compost", "sunExposure": "full", "zone": "Garden" },
+      { "id": "plt_bedB", "name": "Raised Bed B", "type": "bed", "area": 16, "areaUnit": "m²", "soilType": "Compost", "sunExposure": "partial", "zone": "Garden" },
+      { "id": "plt_south", "name": "South Plot", "type": "plot", "area": 300, "areaUnit": "m²", "soilType": "Clay", "sunExposure": "full", "zone": "South" }
+    ],
+    "crops": [
+      { "id": "crop_tomato", "name": "Cherry Tomato", "species": "Solanum lycopersicum", "family": "Solanaceae", "daysToMaturity": 70, "spacingCm": 50, "season": ["wet", "dry"] },
+      { "id": "crop_chili", "name": "Bird's Eye Chili", "species": "Capsicum annuum", "family": "Solanaceae", "daysToMaturity": 90, "spacingCm": 40, "season": ["wet"] },
+      { "id": "crop_basil", "name": "Thai Basil", "species": "Ocimum basilicum", "family": "Lamiaceae", "daysToMaturity": 45, "spacingCm": 25, "season": ["wet", "dry"] },
+      { "id": "crop_lettuce", "name": "Lettuce", "species": "Lactuca sativa", "family": "Asteraceae", "daysToMaturity": 40, "spacingCm": 30, "season": ["dry"] },
+      { "id": "crop_rice", "name": "Sticky Rice", "species": "Oryza sativa", "family": "Poaceae", "daysToMaturity": 120, "spacingCm": 20, "season": ["wet"] },
+      { "id": "crop_cucumber", "name": "Cucumber", "species": "Cucumis sativus", "family": "Cucurbitaceae", "daysToMaturity": 55, "spacingCm": 60, "season": ["wet"] }
+    ],
+    "plantings": [
+      { "id": "p_tomato1", "plotId": "plt_gh1", "cropId": "crop_tomato", "method": "seedling", "stage": "ready", "quantity": 24, "unit": "piece", "plantedAt": "2025-04-15T00:00:00.000Z", "expectedHarvest": "2025-07-20T00:00:00.000Z", "progress": 88, "stageHistory": [{ "stage": "planned", "at": "2025-04-15T00:00:00.000Z" }, { "stage": "seedling", "at": "2025-04-20T00:00:00.000Z" }, { "stage": "vegetative", "at": "2025-05-10T00:00:00.000Z" }, { "stage": "flowering", "at": "2025-05-30T00:00:00.000Z" }, { "stage": "fruiting", "at": "2025-06-15T00:00:00.000Z" }, { "stage": "ready", "at": "2025-07-10T00:00:00.000Z" }] },
+      { "id": "p_lettuce1", "plotId": "plt_bedA", "cropId": "crop_lettuce", "method": "seed", "stage": "ready", "quantity": 40, "unit": "piece", "plantedAt": "2025-06-01T00:00:00.000Z", "expectedHarvest": "2025-07-15T00:00:00.000Z", "progress": 88, "stageHistory": [{ "stage": "planned", "at": "2025-06-01T00:00:00.000Z" }, { "stage": "seeded", "at": "2025-06-02T00:00:00.000Z" }, { "stage": "seedling", "at": "2025-06-12T00:00:00.000Z" }, { "stage": "vegetative", "at": "2025-06-22T00:00:00.000Z" }, { "stage": "ready", "at": "2025-07-12T00:00:00.000Z" }] },
+      { "id": "p_chili1", "plotId": "plt_gh1", "cropId": "crop_chili", "method": "seed", "stage": "fruiting", "quantity": 18, "unit": "piece", "plantedAt": "2025-04-20T00:00:00.000Z", "progress": 66, "stageHistory": [{ "stage": "planned", "at": "2025-04-20T00:00:00.000Z" }, { "stage": "seeded", "at": "2025-04-21T00:00:00.000Z" }, { "stage": "seedling", "at": "2025-05-05T00:00:00.000Z" }, { "stage": "vegetative", "at": "2025-05-25T00:00:00.000Z" }, { "stage": "flowering", "at": "2025-06-15T00:00:00.000Z" }, { "stage": "fruiting", "at": "2025-07-05T00:00:00.000Z" }] },
+      { "id": "p_cucumber1", "plotId": "plt_north", "cropId": "crop_cucumber", "method": "seed", "stage": "flowering", "quantity": 30, "unit": "piece", "plantedAt": "2025-06-05T00:00:00.000Z", "progress": 55 },
+      { "id": "p_basil1", "plotId": "plt_bedB", "cropId": "crop_basil", "method": "seed", "stage": "vegetative", "quantity": 20, "unit": "piece", "plantedAt": "2025-06-20T00:00:00.000Z", "progress": 44 },
+      { "id": "p_rice1", "plotId": "plt_south", "cropId": "crop_rice", "method": "seed", "stage": "seedling", "quantity": 500, "unit": "piece", "plantedAt": "2025-06-28T00:00:00.000Z", "progress": 33 }
+    ],
+    "harvests": [
+      { "id": "h1", "plantingId": "p_tomato1", "cropId": "crop_tomato", "plotId": "plt_gh1", "quantity": 8.5, "unit": "kg", "quality": "A", "harvestedAt": "2025-07-02T00:00:00.000Z" },
+      { "id": "h2", "plantingId": "p_lettuce1", "cropId": "crop_lettuce", "plotId": "plt_bedA", "quantity": 12, "unit": "piece", "quality": "A", "harvestedAt": "2025-06-22T00:00:00.000Z" },
+      { "id": "h3", "plantingId": "p_basil1", "cropId": "crop_basil", "plotId": "plt_bedB", "quantity": 4, "unit": "bunch", "quality": "B", "harvestedAt": "2025-05-30T00:00:00.000Z" }
+    ],
+    "tasks": [
+      { "id": "t1", "title": "Service the Kubota tractor", "description": "Oil change, filters, grease", "status": "todo", "priority": "high", "category": "maintenance", "dueAt": "2025-07-22T00:00:00.000Z", "assignee": "Sai" },
+      { "id": "t2", "title": "Replace Greenhouse 1 shade net", "status": "in_progress", "priority": "medium", "category": "maintenance", "assignee": "Kham" },
+      { "id": "t3", "title": "Water raised beds", "status": "todo", "priority": "medium", "category": "irrigation", "plotId": "plt_bedA", "dueAt": "2025-07-18T00:00:00.000Z" },
+      { "id": "t4", "title": "Harvest lettuce", "status": "done", "priority": "low", "category": "harvest", "plotId": "plt_bedA" },
+      { "id": "t5", "title": "Order sticky rice seed", "status": "done", "priority": "medium", "category": "other" }
+    ],
+    "inventory": [
+      { "id": "i_seed", "name": "Cherry Tomato Seed", "category": "seed", "unit": "piece", "stock": 5, "reorderLevel": 10, "costPerUnit": 0.4, "currency": "USD", "notes": "Low — reorder soon" },
+      { "id": "i_fert", "name": "NPK Fertilizer", "category": "fertilizer", "unit": "kg", "stock": 2, "reorderLevel": 5, "costPerUnit": 1.2, "currency": "USD" },
+      { "id": "i_neem", "name": "Neem Oil", "category": "pesticide", "unit": "liter", "stock": 3, "reorderLevel": 2, "costPerUnit": 6, "currency": "USD" },
+      { "id": "i_compost", "name": "Compost", "category": "soil", "unit": "kg", "stock": 80, "reorderLevel": 20, "costPerUnit": 0.3, "currency": "USD" },
+      { "id": "i_spade", "name": "Garden Spade", "category": "tool", "unit": "piece", "stock": 1, "reorderLevel": 0, "costPerUnit": 25, "currency": "USD", "notes": "Durable — convert to asset" },
+      { "id": "i_sprayer", "name": "Backpack Sprayer", "category": "tool", "unit": "piece", "stock": 2, "reorderLevel": 1, "costPerUnit": 45, "currency": "USD" }
+    ],
+    "finance": [
+      { "id": "f1", "type": "income", "category": "Produce sale", "amount": 120, "currency": "USD", "date": "2025-07-05T00:00:00.000Z", "description": "Tomato — morning market" },
+      { "id": "f2", "type": "income", "category": "Produce sale", "amount": 60, "currency": "USD", "date": "2025-06-18T00:00:00.000Z", "description": "Lettuce — co-op" },
+      { "id": "f3", "type": "income", "category": "Produce sale", "amount": 90, "currency": "USD", "date": "2025-05-28T00:00:00.000Z", "description": "Basil — restaurant" },
+      { "id": "f4", "type": "expense", "category": "Inputs", "amount": 40, "currency": "USD", "date": "2025-06-10T00:00:00.000Z", "description": "Fertilizer + neem oil", "plotId": "plt_gh1" },
+      { "id": "f5", "type": "expense", "category": "Labor", "amount": 30, "currency": "USD", "date": "2025-06-15T00:00:00.000Z", "description": "Bed prep help" },
+      { "id": "f6", "type": "expense", "category": "Equipment", "amount": 15, "currency": "USD", "date": "2025-05-20T00:00:00.000Z", "description": "Pump impeller seal" },
+      { "id": "f7", "type": "income", "category": "Livestock sale", "amount": 8, "currency": "USD", "date": "2025-05-15T00:00:00.000Z", "description": "sale · Layers", "sourceType": "livestock", "sourceId": "mv_chicken_sale" }
+    ],
+    "livestock": [
+      { "id": "lv_chickens", "name": "Layers", "species": "chicken", "breed": "Local", "tagId": "FLK-01", "sex": "mixed", "count": 24, "status": "active", "notes": "Laying flock" },
+      { "id": "lv_duck", "name": "Mr. Quack", "species": "duck", "breed": "Khaki Campbell", "tagId": "DK-07", "sex": "male", "count": 1, "status": "active" },
+      { "id": "lv_cow", "name": "Mochi", "species": "cow", "breed": "Local", "tagId": "CW-03", "sex": "female", "count": 1, "birthDate": "2020-03-12T00:00:00.000Z", "status": "active" },
+      { "id": "lv_goat", "name": "Billy's Herd", "species": "goat", "sex": "mixed", "count": 2, "status": "active" }
+    ],
+    "livestockHealth": [
+      { "id": "lh1", "animalId": "lv_chickens", "type": "vaccination", "description": "Newcastle vaccine — whole flock", "severity": "low", "date": "2025-06-01T00:00:00.000Z", "cost": 12, "vetName": "Dr. Noy" },
+      { "id": "lh2", "animalId": "lv_cow", "type": "checkup", "description": "Routine health check", "severity": "low", "date": "2025-05-10T00:00:00.000Z", "vetName": "Dr. Noy" }
+    ],
+    "livestockProduction": [
+      { "id": "lp1", "animalId": "lv_chickens", "product": "eggs", "quantity": 18, "unit": "piece", "date": "2025-07-15T00:00:00.000Z", "notes": "Daily average" },
+      { "id": "lp2", "animalId": "lv_cow", "product": "milk", "quantity": 6, "unit": "liter", "date": "2025-07-15T00:00:00.000Z" }
+    ],
+    "livestockMovements": [
+      { "id": "mv_chicken_buy", "animalId": "lv_chickens", "type": "purchase", "count": 25, "date": "2024-09-01T00:00:00.000Z", "counterparty": "Somchai Farm", "totalAmount": 150, "currency": "USD" },
+      { "id": "mv_chicken_sale", "animalId": "lv_chickens", "type": "sale", "count": 1, "date": "2025-05-15T00:00:00.000Z", "counterparty": "Morning Market", "totalAmount": 8, "currency": "USD", "financeId": "f7" },
+      { "id": "mv_cow_buy", "animalId": "lv_cow", "type": "purchase", "count": 1, "date": "2020-03-12T00:00:00.000Z", "counterparty": "District breeder", "totalAmount": 600, "currency": "USD" }
+    ],
+    "assets": [
+      { "id": "ast_tractor", "name": "Kubota Tractor", "category": "vehicle", "assetTag": "EQ-001", "serialNumber": "KUB-2023-8841", "status": "active", "condition": "good", "location": "North shed", "assignedTo": "Kham", "purchaseDate": "2023-03-01T00:00:00.000Z", "purchaseCost": 18000, "currentValue": 15000, "currency": "USD", "warrantyUntil": "2026-03-01T00:00:00.000Z", "notes": "Primary field tractor" },
+      { "id": "ast_pump", "name": "Water Pump", "category": "irrigation", "assetTag": "EQ-014", "status": "maintenance", "condition": "fair", "location": "South Plot", "assignedTo": "Sai", "purchaseDate": "2022-09-15T00:00:00.000Z", "purchaseCost": 800, "currentValue": 500, "currency": "USD", "warrantyUntil": "2025-08-01T00:00:00.000Z", "notes": "Warranty expires soon — seal replaced" },
+      { "id": "ast_gh", "name": "Greenhouse 1 Structure", "category": "building", "status": "active", "condition": "good", "location": "Main", "purchaseDate": "2021-11-01T00:00:00.000Z", "purchaseCost": 4000, "currentValue": 3500, "currency": "USD" },
+      { "id": "ast_bike", "name": "Farm Motorbike", "category": "vehicle", "assetTag": "EQ-007", "status": "active", "condition": "good", "location": "North shed", "assignedTo": "Sai", "purchaseDate": "2022-05-20T00:00:00.000Z", "purchaseCost": 2200, "currentValue": 1800, "currency": "USD" },
+      { "id": "ast_oldspray", "name": "Old Hand Sprayer", "category": "equipment", "status": "retired", "condition": "poor", "location": "Storage", "purchaseDate": "2019-02-10T00:00:00.000Z", "purchaseCost": 300, "currency": "USD", "notes": "Retired — leaks" }
+    ],
+    "maintenanceLogs": [
+      { "id": "mt1", "assetId": "ast_tractor", "type": "routine", "description": "Oil change + filter replacement", "date": "2025-06-15T00:00:00.000Z", "cost": 45, "performedBy": "Sai" },
+      { "id": "mt2", "assetId": "ast_pump", "type": "repair", "description": "Replaced impeller seal", "date": "2025-07-01T00:00:00.000Z", "cost": 35, "performedBy": "Kham" },
+      { "id": "mt3", "assetId": "ast_bike", "type": "routine", "description": "Rear tire replacement", "date": "2025-05-10T00:00:00.000Z", "cost": 20, "performedBy": "Sai" },
+      { "id": "mt4", "assetId": "ast_tractor", "type": "inspection", "description": "Annual safety inspection", "date": "2025-04-20T00:00:00.000Z", "cost": 0, "performedBy": "Kham" }
+    ],
+    "activities": [
+      { "id": "ac1", "plantingId": "p_tomato1", "type": "watering", "date": "2025-07-14T00:00:00.000Z", "note": "Deep morning soak" },
+      { "id": "ac2", "plantingId": "p_tomato1", "type": "fertilizing", "date": "2025-06-20T00:00:00.000Z", "note": "Side-dressed", "inputId": "i_fert", "inputQty": 1, "inputUnit": "kg" },
+      { "id": "ac3", "plantingId": "p_chili1", "type": "pest_treatment", "date": "2025-06-25T00:00:00.000Z", "note": "Aphids on new shoots", "inputId": "i_neem", "inputQty": 0.5, "inputUnit": "liter" },
+      { "id": "ac4", "plantingId": "p_chili1", "type": "weeding", "date": "2025-07-10T00:00:00.000Z" }
+    ]
+  }
+}

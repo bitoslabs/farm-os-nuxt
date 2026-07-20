@@ -230,18 +230,12 @@ market_listing → market_order
 expense_record / income_record → season_report
 ```
 
-Key relationships mirror what you already do in CNG (member → pregnancy →
-status view): most "current state" tables (plot, crop plan, inventory level)
-are **replaceable/addressable events**, while logs (harvest, watering,
-labor) are **append-only**, exactly like your `member_cng_pregnancy`
-open/closed pattern.
-
 ---
 
-## 5. UX Considerations (carried over from Clear MIS learnings)
+## 5. UX Considerations & Features
 
 - **Offline-first PWA** — field workers/farmers often have poor connectivity; queue events locally, sync on reconnect (same as your Nostr ERP plan).
-- **Lao + English bilingual** — Noto Sans Lao pairing, same as your design system.
+- **Lao + English bilingual** — Phetsarath OT, Noto Sans Lao pairing, same as your design system.
 - **Photo-first logging** — growth log, pest sighting, and harvest record should support a single photo + quantity + one-tap save, minimal typing.
 - **Season-aware calendar UI** — align with Lao wet/dry season cycles rather than generic Gregorian quarters.
 - **Simple mode toggle** — Garden Mode hides labor/inventory/financial complexity by default; Farm Mode reveals it.
@@ -258,7 +252,7 @@ open/closed pattern.
 | **3 — Environment & IoT** | Irrigation scheduling/logs, weather snapshot, sensor readings |
 | **4 — Economics** | Expense/income tracking, season reports, marketplace listings |
 | **5 — Community layer** | Knowledge base, pest alert sharing, certification/compliance |
-| **6 — Livestock (optional)** | If needed for mixed farms |
+| **6 — Livestock** | If needed for mixed farms |
 
 ---
 
